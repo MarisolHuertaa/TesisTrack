@@ -8,7 +8,7 @@ export default function Register() {
     apellido: '',
     correo: '',
     password: '',
-    rol_id: '1' // Por defecto: 1 = Estudiante, 2 = Docente, 3 = Coordinador
+    rol_id: '1',
   });
 
   const [error, setError] = useState('');
@@ -23,10 +23,9 @@ export default function Register() {
     setError('');
 
     try {
-      // Asegurar que rol_id se envíe como un número entero (number)
       const dataToSend = {
         ...formData,
-        rol_id: parseInt(formData.rol_id, 10)
+        rol_id: parseInt(formData.rol_id, 10),
       };
 
       await API.post('/auth/register', dataToSend);
@@ -38,48 +37,85 @@ export default function Register() {
   };
 
   return (
-    <div style={{ maxWidth: '400px', margin: '40px auto', padding: '20px', border: '1px solid #ccc', borderRadius: '8px' }}>
-      <h2>Registro - TesisTrack</h2>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+    <div className="auth-container">
+      <div className="auth-header">
+        <h1>Crear Cuenta</h1>
+        <p>Únete a TesisTrack para Gestionar tu Proyecto</p>
+      </div>
+
+      {error && <div className="alert-error">{error}</div>}
 
       <form onSubmit={handleRegister}>
-        <div style={{ marginBottom: '10px' }}>
-          <label>Nombre:</label>
-          <input type="text" name="nombre" onChange={handleChange} required style={{ width: '100%', padding: '8px', marginTop: '4px' }} />
+        <div className="form-group">
+          <label>Nombre(s)</label>
+          <input
+            type="text"
+            name="nombre"
+            className="form-control"
+            placeholder="Marisol"
+            onChange={handleChange}
+            required
+          />
         </div>
 
-        <div style={{ marginBottom: '10px' }}>
-          <label>Apellido:</label>
-          <input type="text" name="apellido" onChange={handleChange} required style={{ width: '100%', padding: '8px', marginTop: '4px' }} />
+        <div className="form-group">
+          <label>Apellido(s)</label>
+          <input
+            type="text"
+            name="apellido"
+            className="form-control"
+            placeholder="Huerta"
+            onChange={handleChange}
+            required
+          />
         </div>
 
-        <div style={{ marginBottom: '10px' }}>
-          <label>Correo electrónico:</label>
-          <input type="email" name="correo" onChange={handleChange} required style={{ width: '100%', padding: '8px', marginTop: '4px' }} />
+        <div className="form-group">
+          <label>Correo Electrónico</label>
+          <input
+            type="email"
+            name="correo"
+            className="form-control"
+            placeholder="ejemplo@alumnos.udg.mx"
+            onChange={handleChange}
+            required
+          />
         </div>
 
-        <div style={{ marginBottom: '10px' }}>
-          <label>Contraseña:</label>
-          <input type="password" name="password" onChange={handleChange} required style={{ width: '100%', padding: '8px', marginTop: '4px' }} />
+        <div className="form-group">
+          <label>Contraseña</label>
+          <input
+            type="password"
+            name="password"
+            className="form-control"
+            placeholder="••••••••"
+            onChange={handleChange}
+            required
+          />
         </div>
 
-        <div style={{ marginBottom: '15px' }}>
-          <label>Rol:</label>
-          <select name="rol_id" value={formData.rol_id} onChange={handleChange} style={{ width: '100%', padding: '8px', marginTop: '4px' }}>
+        <div className="form-group">
+          <label>Rol en la Plataforma</label>
+          <select
+            name="rol_id"
+            className="form-control"
+            value={formData.rol_id}
+            onChange={handleChange}
+          >
             <option value="1">Estudiante</option>
-            <option value="2">Docente</option>
+            <option value="2">Docente / Asesor</option>
             <option value="3">Coordinador</option>
           </select>
         </div>
 
-        <button type="submit" style={{ width: '100%', padding: '10px', backgroundColor: '#28a745', color: 'white', border: 'none', borderRadius: '4px' }}>
-          Registrarse
+        <button type="submit" className="btn-primary">
+          Completar Registro
         </button>
       </form>
 
-      <p style={{ marginTop: '15px', textAlign: 'center' }}>
+      <div className="auth-footer">
         ¿Ya tienes cuenta? <Link to="/login">Inicia sesión aquí</Link>
-      </p>
+      </div>
     </div>
   );
 }

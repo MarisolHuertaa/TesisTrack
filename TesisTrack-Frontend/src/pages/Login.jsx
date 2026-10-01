@@ -13,56 +13,57 @@ export default function Login() {
     setError('');
 
     try {
-      const response = await API.post('/auth/login', { correo, password });
-      
-      // Guardar Token y Usuario en LocalStorage
-      localStorage.setItem('token', response.data.token);
-      localStorage.setItem('usuario', JSON.stringify(response.data.usuario));
-
-      alert(`¡Bienvenido ${response.data.usuario.nombre}!`);
-      // Redireccionar al panel principal cuando lo construyamos
-      // navigate('/dashboard');
+      const res = await API.post('/auth/login', { correo, password });
+      localStorage.setItem('token', res.data.token);
+      alert(`¡Bienvenido/a ${res.data.usuario.nombre}!`);
+      // navigate('/dashboard'); // Descomentar al crear el dashboard
     } catch (err) {
-      setError(err.response?.data?.mensaje || 'Error al iniciar sesión');
+      setError(err.response?.data?.mensaje || 'Credenciales inválidas');
     }
   };
 
   return (
-    <div style={{ maxWidth: '400px', margin: '50px auto', padding: '20px', border: '1px solid #ccc', borderRadius: '8px' }}>
-      <h2>Iniciar Sesión - TesisTrack</h2>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      
+    <div className="auth-container">
+      <div className="auth-header">
+        <h1>TesisTrack</h1>
+        <p>Gestión y Seguimiento de Titulación Universitaria</p>
+      </div>
+
+      {error && <div className="alert-error">{error}</div>}
+
       <form onSubmit={handleLogin}>
-        <div style={{ marginBottom: '15px' }}>
-          <label>Correo electrónico:</label>
-          <input 
-            type="email" 
-            value={correo} 
-            onChange={(e) => setCorreo(e.target.value)} 
-            required 
-            style={{ width: '100%', padding: '8px', marginTop: '5px' }}
+        <div className="form-group">
+          <label>Correo Institucional</label>
+          <input
+            type="email"
+            className="form-control"
+            placeholder="ejemplo@alumnos.udg.mx"
+            value={correo}
+            onChange={(e) => setCorreo(e.target.value)}
+            required
           />
         </div>
 
-        <div style={{ marginBottom: '15px' }}>
-          <label>Contraseña:</label>
-          <input 
-            type="password" 
-            value={password} 
-            onChange={(e) => setPassword(e.target.value)} 
-            required 
-            style={{ width: '100%', padding: '8px', marginTop: '5px' }}
+        <div className="form-group">
+          <label>Contraseña</label>
+          <input
+            type="password"
+            className="form-control"
+            placeholder="••••••••"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
           />
         </div>
 
-        <button type="submit" style={{ width: '100%', padding: '10px', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '4px' }}>
-          Ingresar
+        <button type="submit" className="btn-primary">
+          Iniciar Sesión
         </button>
       </form>
 
-      <p style={{ marginTop: '15px', textAlign: 'center' }}>
-        ¿No tienes cuenta? <Link to="/register">Regístrate aquí</Link>
-      </p>
+      <div className="auth-footer">
+        ¿Aún no tienes cuenta? <Link to="/register">Regístrate aquí</Link>
+      </div>
     </div>
   );
 }
