@@ -1,0 +1,114 @@
+.timeline-container {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  margin-bottom: 24px;
+}
+
+.timeline-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 20px;
+}
+
+.timeline-track {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  position: relative;
+}
+
+.timeline-step {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.timeline-step:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* Nodos según estado */
+.timeline-node {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 0.9rem;
+  margin-bottom: 12px;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+/* Estado: Completado */
+.timeline-step.completed {
+  border-color: #cbd5e1;
+  background-color: #ffffff;
+}
+.timeline-step.completed .timeline-node {
+  background-color: #22c55e;
+  color: #ffffff;
+}
+
+/* Estado: Activo / En proceso */
+.timeline-step.active {
+  border: 2px solid #2563eb;
+  background-color: #eff6ff;
+}
+.timeline-step.active .timeline-node {
+  background-color: #2563eb;
+  color: #ffffff;
+}
+
+/* Estado: Pendiente */
+.timeline-step.pending {
+  border-color: #f1f5f9;
+  background-color: #f8fafc;
+  opacity: 0.7;
+}
+.timeline-step.pending .timeline-node {
+  background-color: #cbd5e1;
+  color: #475569;
+}
+
+.timeline-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.step-title {
+  font-weight: 600;
+  color: #0f172a;
+  font-size: 0.95rem;
+}
+
+.step-badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+}
+
+.completed .step-badge { color: #16a34a; }
+.active .step-badge { color: #2563eb; }
+.pending .step-badge { color: #64748b; }
+
+.step-desc {
+  font-size: 0.8rem;
+  color: #64748b;
+  margin: 0;
+  line-height: 1.3;
+}

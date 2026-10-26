@@ -15,8 +15,11 @@ export default function Login() {
     try {
       const res = await API.post('/auth/login', { correo, password });
       localStorage.setItem('token', res.data.token);
+      localStorage.setItem('user', JSON.stringify(res.data.usuario));
       alert(`¡Bienvenido/a ${res.data.usuario.nombre}!`);
-      // navigate('/dashboard'); // Descomentar al crear el dashboard
+      
+      // Se activa la redirección al Dashboard
+      navigate('/dashboard');
     } catch (err) {
       setError(err.response?.data?.mensaje || 'Credenciales inválidas');
     }
