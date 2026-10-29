@@ -1,0 +1,41 @@
+# Registro de Deuda Técnica
+
+**Proyecto:** TesisTrack  
+**Última actualización:** 2026-10-29  
+**Total de deudas registradas:** 3  
+
+## Resumen
+
+| Prioridad | Cantidad | Resueltas |
+| --- | --- | --- |
+| Alta | 1 | 0 |
+| Media | 2 | 0 |
+| Baja | 0 | 0 |
+| **Total** | **3** | **0** |
+
+---
+
+## Deudas de Prioridad Media
+
+### DT-002: Manejo pobre de errores en respuestas del servidor
+
+| Campo | Detalle |
+| --- | --- |
+| **Descripción** | La interfaz muestra errores genéricos del sistema (ej. `Error 500` o pantallas en blanco) al fallar una petición HTTP. |
+| **Ubicación** | `TesisTrack-Frontend/src/components/` |
+| **Impacto / Consecuencias** | Mala experiencia de usuario (UX); el usuario no sabe si sus credenciales son incorrectas o si el sistema cayó. |
+| **Prioridad** | Media |
+| **Solución propuesta** | Implementar un interceptor de respuestas o bloques `try-catch` con notificaciones visuales claras (alertas o toasts). |
+| **Esfuerzo estimado** | M |
+| **Responsable** | Equipo de Desarrollo |
+| **Fecha de registro** | 2026-10-29 |
+| **Estado** | Pendiente |
+
+**Detalle:**  
+Los bloques de captura de errores no interpretan el JSON de respuesta enviado por la API, perdiendo el mensaje descriptivo de la falla.
+
+**Criterios de aceptación:**
+- [ ] Mensajes claros e informativos para errores de autenticación (401/403) y validación (400).
+- [ ] Ausencia de pantallas en blanco ante caídas del backend.
+
+---
