@@ -1,0 +1,28 @@
+name: Pruebas Automatizadas TesisTrack
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master, develop ]
+
+jobs:
+  ejecutar-pruebas:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Copiar código del repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Instalar dependencias del Backend
+        run: npm install
+        working-directory: ./TesisTrack-Backend
+
+      - name: Ejecutar pruebas en Backend
+        run: npm test
+        working-directory: ./TesisTrack-Backend
