@@ -1,21 +1,22 @@
-**Proyecto:** TesisTrack  
-**Última actualización:** 2026-10-29  
-**Total de deudas registradas:** 3  
+# DT-001: Hardcodeo de URLs de API y variables de entorno
+
+**Proyecto:** TesisTrack   
+**Total de deudas registradas:** 4  
+
+---
 
 ## Resumen
 
 | Prioridad | Cantidad | Resueltas |
 | --- | --- | --- |
 | Alta | 1 | 0 |
-| Media | 2 | 0 |
+| Media | 3 | 0 |
 | Baja | 0 | 0 |
-| **Total** | **3** | **0** |
+| **Total** | **4** | **0** |
 
 ---
 
-## Deudas de Prioridad Alta
-
-### DT-001: Hardcodeo de URLs de API y variables de entorno
+## Deuda Técnica DT-001
 
 | Campo | Detalle |
 | --- | --- |
@@ -29,13 +30,11 @@
 | **Fecha de registro** | 2026-10-29 |
 | **Estado** | Pendiente |
 
-**Detalle:**  
-El puerto y la dirección IP del backend se encuentran acoplados al código fuente del cliente, lo que impide realizar pruebas dinámicas entre diferentes entornos sin editar el código manualmente.
-
-**Criterios de aceptación:**
-- [ ] Creación e integración del archivo `.env.example` en la raíz de `TesisTrack-Frontend`.
-- [ ] Ningún archivo de código fuente contiene URLs base en texto plano.
-
 ---
 
-## Deudas de Prioridad Media
+### Detalle
+El puerto y la dirección IP del backend se encuentran acoplados al código fuente del cliente, lo que impide realizar pruebas dinámicas entre diferentes entornos sin editar el código manualmente.
+
+### Criterios de Aceptación
+- Creación e integración del archivo `.env.example` en la raíz de `TesisTrack-Frontend`.
+- Ningún archivo de código fuente contiene URLs base en texto plano.
