@@ -1,7 +1,6 @@
 # ADR 001: Elección del Stack Tecnológico y Arquitectura Monorepo
 
 * **Estado:** Aceptado
-* **Fecha:** 2026-10-01
 * **Autores:** Equipo TesisTrack
 
 ---

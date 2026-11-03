@@ -1,7 +1,6 @@
 # ADR 002: Estrategia de Autenticación con JWT y Hashing de Contraseñas con bcrypt
 
 * **Estado:** Aceptado
-* **Fecha:** 2026-10-01
 * **Autores:** Equipo TesisTrack
 
 ---
