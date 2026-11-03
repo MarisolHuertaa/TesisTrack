@@ -1,4 +1,4 @@
-# 003. Uso de Jest como Framework Principal de Pruebas Automatizadas
+# ADR 003. Uso de Jest como Framework Principal de Pruebas Automatizadas
 
 * **Estado:** Aceptado
 * **Módulo Afectado:** TesisTrack-Backend / Pruebas

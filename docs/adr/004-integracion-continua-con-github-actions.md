@@ -1,4 +1,4 @@
-# 004. Automatización de Pruebas mediante GitHub Actions (CI/CD)
+# ADR 004. Automatización de Pruebas mediante GitHub Actions (CI/CD)
 
 * **Estado:** Aceptado
 * **Módulo Afectado:** `.github/workflows/pruebas.yml` / Repositorio General
