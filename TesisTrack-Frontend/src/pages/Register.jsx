@@ -9,6 +9,9 @@ export default function Register() {
     correo: '',
     password: '',
     rol_id: '1',
+    codigo_empleado: '',
+    departamento: 'Coordinación de Ingeniería de Software',
+    nivel: 'Licenciatura',
   });
 
   const [error, setError] = useState('');
@@ -52,7 +55,8 @@ export default function Register() {
             type="text"
             name="nombre"
             className="form-control"
-            placeholder="Marisol"
+            placeholder="Marisol / Héctor"
+            value={formData.nombre}
             onChange={handleChange}
             required
           />
@@ -64,7 +68,8 @@ export default function Register() {
             type="text"
             name="apellido"
             className="form-control"
-            placeholder="Huerta"
+            placeholder="Huerta / Padilla"
+            value={formData.apellido}
             onChange={handleChange}
             required
           />
@@ -77,6 +82,7 @@ export default function Register() {
             name="correo"
             className="form-control"
             placeholder="ejemplo@alumnos.udg.mx"
+            value={formData.correo}
             onChange={handleChange}
             required
           />
@@ -89,6 +95,7 @@ export default function Register() {
             name="password"
             className="form-control"
             placeholder="••••••••"
+            value={formData.password}
             onChange={handleChange}
             required
           />
@@ -107,6 +114,70 @@ export default function Register() {
             <option value="3">Coordinador</option>
           </select>
         </div>
+
+        {/* Bloque dinámico exclusivo para Coordinador (rol_id === '3') */}
+        {formData.rol_id === '3' && (
+          <div
+            className="coordinator-box"
+            style={{
+              backgroundColor: '#FAFAFE',
+              border: '1.5px dashed #818CF8',
+              borderRadius: '8px',
+              padding: '14px',
+              marginTop: '10px',
+              marginBottom: '16px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '12px',
+            }}
+          >
+            <div className="form-group">
+              <label>Código / Num. de Empleado</label>
+              <input
+                type="text"
+                name="codigo_empleado"
+                className="form-control"
+                placeholder="EMP-99482"
+                value={formData.codigo_empleado}
+                onChange={handleChange}
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Coordinación Académica</label>
+              <select
+                name="departamento"
+                className="form-control"
+                value={formData.departamento}
+                onChange={handleChange}
+              >
+                <option value="Coordinación de Ingeniería de Software">
+                  Coordinación de Ingeniería de Software
+                </option>
+                <option value="Coordinación de Ciencias Computacionales">
+                  Coordinación de Ciencias Computacionales
+                </option>
+                <option value="Coordinación de Tecnologías de Información">
+                  Coordinación de Tecnologías de Información
+                </option>
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label>Nivel Académico</label>
+              <select
+                name="nivel"
+                className="form-control"
+                value={formData.nivel}
+                onChange={handleChange}
+              >
+                <option value="Licenciatura">Licenciatura</option>
+                <option value="Maestría / Posgrado">Maestría / Posgrado</option>
+              </select>
+            </div>
+          </div>
+        )}
 
         <button type="submit" className="btn-primary">
           Completar Registro
