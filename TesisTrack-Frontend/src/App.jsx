@@ -3,6 +3,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { Dashboard } from './pages/Dashboard';
+import DashboardCoordinacion from './pages/DashboardCoordinacion';
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
         {/* Rutas Protegidas */}
         <Route element={<ProtectedRoute />}>
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/dashboard-coordinacion" element={<DashboardCoordinacion />} />
         </Route>
 
         {/* Redirección por defecto */}
