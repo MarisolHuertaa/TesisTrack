@@ -20,8 +20,8 @@
 
 | Campo | Detalle |
 | --- | --- |
-| **Descripción** | Las URLs del servidor (`http://localhost:3000`) están escritas directamente dentro del código del frontend. |
-| **Ubicación** | `TesisTrack-Frontend/src/services/api.js` |
+| **Descripción** | La URL del servidor (`http://localhost:5000`) está escrita directamente en `api.js` y en tres componentes que usan `axios`/`fetch` directo en lugar del cliente `api.js`. |
+| **Ubicación** | `TesisTrack-Frontend/src/services/api.js`, `components/dashboards/StudentDashboard.jsx`, `pages/Dashboard.jsx`, `components/NotificationsDropdown.jsx` |
 | **Impacto / Consecuencias** | Al desplegar a producción o staging, la aplicación falla porque sigue intentando conectar a la máquina local. |
 | **Prioridad** | Alta |
 | **Solución propuesta** | Migrar todas las variables de conexión a un archivo `.env` local usando `process.env` o `import.meta.env`. |
