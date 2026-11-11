@@ -1,6 +1,8 @@
 const db = require('../config/db'); 
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const { JWT_SECRET, JWT_EXPIRES_IN } = require('../config/jwt');
+const { esCorreoInstitucional } = require('../utils/validaciones');
 
 // 1. REGISTRO DE USUARIO
 exports.registrar = async (req, res) => {
@@ -8,6 +10,10 @@ exports.registrar = async (req, res) => {
 
     if (!nombre || !apellido || !correo || !password || !rol_id) {
         return res.status(400).json({ mensaje: 'Todos los campos son obligatorios' });
+    }
+
+    if (!esCorreoInstitucional(correo)) {
+        return res.status(400).json({ mensaje: 'Debes usar tu correo institucional (@...udg.mx)' });
     }
 
     try {
@@ -19,8 +25,8 @@ exports.registrar = async (req, res) => {
         const salt = await bcrypt.genSalt(10);
         const password_hash = await bcrypt.hash(password, salt);
 
-        // Se usa la columna 'password' en la tabla en la BD
-        const sql = 'INSERT INTO usuarios (nombre, apellido, correo, password, rol_id) VALUES (?, ?, ?, ?, ?)';
+        // La columna en SQUEMA.sql se llama password_hash (antes se insertaba en 'password' y fallaba)
+        const sql = 'INSERT INTO usuarios (nombre, apellido, correo, password_hash, rol_id) VALUES (?, ?, ?, ?, ?)';
         const [resultado] = await db.query(sql, [nombre, apellido, correo, password_hash, rol_id]);
 
         res.status(201).json({
@@ -71,8 +77,8 @@ exports.login = async (req, res) => {
                 rol_id: usuario.rol_id,
                 rol: usuario.rol_nombre 
             },
-            process.env.JWT_SECRET || 'clave_secreta_default',
-            { expiresIn: '8h' }
+            JWT_SECRET,
+            { expiresIn: JWT_EXPIRES_IN }
         );
 
         res.json({
