@@ -168,11 +168,15 @@ Test Suites: 3 passed, 3 total
 Tests:       30 passed, 30 total
 ```
 
+ docs/entregable-2
 ### Ejecución en GitHub Actions
 
 Ejecución #23 sobre `main`, después de integrar los PRs #5 a #8:
 
 ![GitHub Actions: 30 pruebas aprobadas](./screenshots/github-actions.png)
+=======
+> 📸 Agregar aquí la captura de la pestaña **Actions** de GitHub con el workflow en verde.
+ main
 
 ---
 
