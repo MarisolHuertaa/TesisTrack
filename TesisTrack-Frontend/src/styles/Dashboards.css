@@ -3495,3 +3495,23 @@ input:checked + .toggle-slider:before {
 .notif-view-all-btn:hover {
   color: #4F46E5;
 }
+
+.welcome-project-subtitle {
+  color: #475569;
+  font-size: 0.95rem;
+  font-weight: 495;
+  margin-top: 4px;
+}
+
+/* Badge Aprobado exacto del prototipo */
+.status-green-pill {
+  background-color: #dcfce7;
+  color: #047857;
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  display: inline-block;
+  border: none;
+  line-height: 1.2;
+}
