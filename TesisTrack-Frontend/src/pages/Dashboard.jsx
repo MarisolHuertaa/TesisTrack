@@ -21,7 +21,7 @@ export const Dashboard = () => {
     switch (role) {
       case 'docente':
       case 'revisor':
-        return <TeacherDashboard user={user} activeTab={activeTab} />;
+        return <TeacherDashboard user={user} activeTab={activeTab} setActiveTab={setActiveTab} />;
       case 'admin':
       case 'coordinador':
         return <AdminDashboard user={user} activeTab={activeTab} />;
