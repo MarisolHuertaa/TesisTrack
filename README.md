@@ -2,7 +2,12 @@
 
 # 🎓 TesisTrack - Plataforma de Gestión y Seguimiento de Titulación
 
-Plataforma integral para el seguimiento y gestión del proceso de titulación universitaria.
+[![Pruebas Automatizadas](https://github.com/MarisolHuertaa/TesisTrack/actions/workflows/pruebas.yml/badge.svg)](https://github.com/MarisolHuertaa/TesisTrack/actions/workflows/pruebas.yml)
+![Pruebas](https://img.shields.io/badge/pruebas-30%20passed-brightgreen)
+![Cobertura](https://img.shields.io/badge/cobertura-87%25-brightgreen)
+[![Licencia: MIT](https://img.shields.io/badge/licencia-MIT-blue.svg)](./LICENSE)
+
+Plataforma web que centraliza la entrega, revisión y dictamen de documentos de titulación universitaria entre estudiantes, asesores y coordinación académica.
 
 ---
 
@@ -11,119 +16,168 @@ Plataforma integral para el seguimiento y gestión del proceso de titulación un
 - [Demo y Capturas](#-demo-y-capturas)
 - [Instalación y Configuración](#-instalación-y-configuración)
 - [Uso y Pruebas Automatizadas](#-uso-y-pruebas-automatizadas)
-- [Tecnologías y Stack](#-tecnologías-y-stack)
+- [API REST](#-api-rest)
+- [Tecnologías y Stack](#️-tecnologías-y-stack)
 - [Estructura del Proyecto](#-estructura-del-proyecto)
-- [Documentación Técnica (ADRs, Bloqueos, Deudas Técnicas)](#-documentación-técnica-adrs-bloqueos-deudas)
+- [Documentación Técnica](#-documentación-técnica)
 - [Contribución](#-contribución)
+- [Licencia](#-licencia)
 - [Autores](#-autores)
 
 ---
 
 ## 📖 Descripción
 
-**TesisTrack** es un sistema web diseñado para gestionar y centralizar el flujo de trabajo entre estudiantes en proceso de titulación, asesores de tesis y coordinadores académicos. Resuelve los problemas habituales de desorganización, pérdida de avances por cadenas de correos y falta de visibilidad en el estado de revisión.
+**TesisTrack** es un sistema web que gestiona y centraliza el flujo de trabajo entre estudiantes en proceso de titulación, asesores de tesis y coordinadores académicos. Resuelve la desorganización, la pérdida de avances en cadenas de correos y la falta de visibilidad sobre el estado de cada revisión.
 
-* **Usuario objetivo:** Estudiantes universitarios en proceso de titulación, asesores de tesis y administradores del programa académico.
+* **Usuario objetivo:** estudiantes en proceso de titulación, asesores y sinodales, y coordinación académica.
+* **Problema que resuelve:** comunicación fragmentada, falta de trazabilidad en las correcciones, pérdida de documentos y retrasos en los tiempos de revisión.
 
-* **Problema que resuelve:** Comunicación fragmentada, falta de trazabilidad en las correcciones, pérdida de documentos y retrasos en los tiempos de entrega e inspección.
+### Funcionalidades del MVP
+
+| Funcionalidad | Historia | Estado |
+| :--- | :--- | :--- |
+| Línea de tiempo por fases (Anteproyecto → Desarrollo → Dictamen → Examen) | HU-01 | ✅ |
+| Carga de avances en PDF (máx. 10 MB) con versión correlativa | HU-02 | ✅ |
+| Notificaciones dentro de la plataforma al entregar y al dictaminar | HU-03 | ✅ |
+| Dictamen del asesor (Aprobado / Con observaciones / Rechazado) con justificación obligatoria | HU-04 | ✅ API · 🚧 interfaz |
+| Bloques de disponibilidad del docente para el examen | HU-06 | ✅ API · 🚧 interfaz |
+| Solicitud de fecha de defensa (hasta 3 opciones) | HU-07 | ✅ |
+| Semáforo de tiempos de respuesta para coordinación | HU-08 | 🚧 en desarrollo |
 
 ---
 
 ## 🎬 Demo y Capturas
 
-### Probar la Demo (Entorno Local)
+### Probar la demo en tu computadora
 
-1. En el archivo `.env`, asegúrate de tener configurada la variable `PORT=5000` y la conexión a tu base de datos local.
+1. Instala el proyecto y carga la base de datos siguiendo [Instalación y Configuración](#-instalación-y-configuración).
+2. Abre `http://localhost:5173/login` e inicia sesión con alguna de estas cuentas de prueba (las crea `sembrarHashes.js`):
 
-2. Inicia la aplicación ejecutando `npm run dev` y abre en tu navegador `http://localhost:5173/login`.
+| Rol | Correo | Contraseña |
+| :--- | :--- | :--- |
+| Estudiante (fase 2, con observaciones) | `marisol.huerta@alumnos.udg.mx` | `DNI100001` |
+| Estudiante (dictamen aprobado, puede agendar examen) | `isai.plascencia@alumnos.udg.mx` | `DNI100003` |
+| Docente / Asesor de Marisol | `maria.rosas@docentes.udg.mx` | `DOC100001` |
+| Coordinación | `coordinacion.titulacion@udg.mx` | `COORD2026` |
 
-3. Inicia sesión con las credenciales de prueba predeterminadas (o registra un usuario nuevo):
-   * **Rol Administrador:** `tesistrack@administracion.udg.mx` | Contraseña: `administracion123`
-   * **Rol Docente/Asesor:** `tesistrack@docentes.udg.mx` | Contraseña: `docentes123`
-   * **Rol Estudiante:** `tesistrack@alumnos.udg.mx` | Contraseña: `alumnos123`
+> Los demás estudiantes usan `DNI100001` a `DNI100028` y los docentes `DOC100001` a `DOC100015`, en el orden en que aparecen en `DATA.sql`.
 
-4. Para probar el flujo principal como **Estudiante**:
-   * Ve al módulo **Mis Entregas** y sube un archivo de avance (PDF).
-
-5. Cierra sesión y entra con la cuenta de **Asesor** en `http://localhost:5173/login`:
-   * Revisa la sección **Revisiones Pendientes**.
-   * Abre la entrega del alumno, agrega observaciones/comentarios y cambia el estado a **Aprobado**.
-
-6. Regresa al perfil del **Estudiante** para verificar cómo se actualiza el historial y el cronograma de titulación en tiempo real.
+3. **Flujo del estudiante:** entra como Marisol → **Mis Entregas** → sube un PDF. Si intentas subir un `.docx` o un PDF de más de 10 MB, el sistema lo rechaza.
+4. **Flujo del asesor** 🚧 *(interfaz en desarrollo; la API ya funciona)*: entra como la Mtra. María Rosas → **Revisiones Pendientes** → abre la entrega, escribe observaciones y emite el dictamen. Al aprobar todos los hitos de la fase, la línea de tiempo del estudiante avanza.
+5. **Agendar examen:** entra como Isaí → **Agendar Examen** → elige un horario disponible. Si el proyecto aún no tiene dictamen aprobatorio (por ejemplo, el de Marisol), la API rechaza la solicitud.
 
 ### Capturas de Pantalla
 
 | Pantalla | Descripción |
 | :--- | :--- |
 | ![Login](./docs/screenshots/login.png) | Pantalla de registro y selección de rol. |
-| ![Dashboard](./docs/screenshots/dashboard.png) | Panel principal con progreso general del proceso de titulación y desglose de entregas. |
-| ![Revisiones](./docs/screenshots/revisiones.png) | Registro cronológico de de documentos enviados, observaciones y estados. |
+| ![Dashboard](./docs/screenshots/dashboard.png) | Panel principal con el progreso del proceso de titulación y el desglose de entregas. |
+| ![Revisiones](./docs/screenshots/revisiones.png) | Registro cronológico de documentos enviados, observaciones y estados. |
 | ![Avances](./docs/screenshots/avances.png) | Carga de avance de tesis con notas para el asesor. |
-| ![Postulación](./docs/screenshots/postulacion.png) | Selección de defensa de tesis con horario disponible configurado por el jurado evaluador. |
+| ![Postulación](./docs/screenshots/postulacion.png) | Selección de fecha de defensa con los horarios configurados por el jurado. |
 
 ---
 
 ## 🚀 Instalación y Configuración
 
 ### Requisitos Previos
-Antes de comenzar, asegúrate de descargar e instalar las siguientes herramientas necesarias:
 
-- **Node.js (LTS):** [Descargar Node.js](https://nodejs.org/) (Incluye el gestor de paquetes `npm`)
--  **MySQL Server / Workbench:** [Descargar MySQL](https://dev.mysql.com/downloads/installer/)
-- **Git:** [Descargar Git](https://git-scm.com/downloads)
+- **Node.js 20 LTS o superior:** [Descargar Node.js](https://nodejs.org/) (incluye `npm`)
+- **MySQL 8 o MariaDB 10.6+** con **MySQL Workbench**: [Descargar MySQL](https://dev.mysql.com/downloads/installer/)
+- **Git** o **GitHub Desktop:** [Descargar Git](https://git-scm.com/downloads) · [Descargar GitHub Desktop](https://desktop.github.com/)
 
-### Paso a Paso de Instalación
+### 1. Clonar el repositorio
 
 ```bash
-# 1. Clonar el repositorio
-git clone [https://github.com/MarisolHuertaa/TesisTrack.git](https://github.com/MarisolHuertaa/TesisTrack.git)
-
-# 2. Entrar a la carpeta del proyecto
+git clone https://github.com/MarisolHuertaa/TesisTrack.git
 cd TesisTrack
+```
 
-# 3. Configurar e iniciar el Backend (Asegúrate de configurar tu archivo .env en esta carpeta)
+### 2. Crear y cargar la base de datos
+
+Desde **MySQL Workbench**:
+
+1. **File → Open SQL Script** → `TesisTrack-Backend/database/SQUEMA.sql` → ejecutar con ⚡. Crea la base `tesistrack` y sus 12 tablas.
+2. En una pestaña nueva ejecuta `SET SQL_SAFE_UPDATES = 0;`.
+3. **File → Open SQL Script** → `TesisTrack-Backend/database/DATA.sql` → ejecutar con ⚡. Carga 28 proyectos y 112 entregas de ejemplo.
+
+O desde la terminal (Git Bash, macOS o Linux):
+
+```bash
+mysql -u root -p < TesisTrack-Backend/database/SQUEMA.sql
+mysql -u root -p tesistrack < TesisTrack-Backend/database/DATA.sql
+```
+
+### 3. Configurar y arrancar el Backend
+
+```bash
 cd TesisTrack-Backend
+cp .env.example .env        # en Windows: copy .env.example .env
+# edita .env con tu usuario y contraseña de MySQL
 npm install
-node server.js
+node sembrarHashes.js       # asigna las contraseñas de las cuentas de prueba
+npm run dev                 # API en http://localhost:5000
+```
 
-# 4. Configurar e iniciar el Frontend
+### 4. Arrancar el Frontend (en otra terminal)
+
+```bash
 cd TesisTrack-Frontend
 npm install
-npm run dev
+npm run dev                 # aplicación en http://localhost:5173
 ```
 
 ---
 
 ## 💻 Uso y Pruebas Automatizadas
 
-### Ejemplo de Inicio
-```bash
-npm run dev
-```
-Luego abre tu navegador e ingresa a `http://localhost:5173/login`.
+### Ejecutar las pruebas
 
-### Pruebas Automatizadas
+Las pruebas **no necesitan MySQL**: usan una base de datos simulada en memoria (ver [ADR-005](./docs/adr/005-base-de-datos-simulada-en-pruebas.md)).
+
 ```bash
-# Ejecutar suite de pruebas unitarias, integración y aceptación
-npm test
+cd TesisTrack-Backend
+npm test                    # 30 pruebas
+npm run test:coverage       # además, reporte de cobertura en /coverage
 ```
-### Salida Oficial en Consola
-```bash
-PASS tests/unit.test.js (10 passed, 10 total)
-PASS tests/integration.test.js (10 passed, 10 total)
-PASS tests/e2e.test.js (10 passed, 10 total)
+
+### Salida en consola
+
+```text
+ PASS  tests/unit.test.js
+ PASS  tests/acceptance.test.js
+ PASS  tests/integration.test.js
 
 Test Suites: 3 passed, 3 total
 Tests:       30 passed, 30 total
-Snapshots:   0 total
-Time:        2.548 s
 ```
 
-### Funcionalidades principales
-✅ **Carga de Avances:** Gestión de documentos con control de versiones.  
-✅ **Retroalimentación en Tiempo Real:** Comentarios directos de los asesores.  
-✅ **Seguimiento de Hitos:** Control de fechas límite y cronograma institucional.  
-✅ **Reportes de Progreso:** Estadísticas para la coordinación académica.
+| Tipo | Archivo | Casos | Qué verifica |
+| :--- | :--- | :--- | :--- |
+| Unitarias | `tests/unit.test.js` | CP-01 a CP-10 | Reglas de negocio aisladas (`utils/validaciones.js`) |
+| Integración | `tests/integration.test.js` | CP-11 a CP-20 | Peticiones HTTP reales a la API con Supertest |
+| Aceptación | `tests/acceptance.test.js` | CP-21 a CP-30 | Criterios *Dado / Cuando / Entonces* de las historias de usuario |
+
+El detalle de cada caso, la evidencia y los defectos encontrados están en [`docs/CASOS_DE_PRUEBA.md`](./docs/CASOS_DE_PRUEBA.md). **GitHub Actions** ejecuta las pruebas en cada *push* y en cada Pull Request.
+
+---
+
+## 🔌 API REST
+
+Todas las rutas, excepto registro y login, requieren el encabezado `Authorization: Bearer <token>`.
+
+| Método | Ruta | Rol | Descripción |
+| :--- | :--- | :--- | :--- |
+| POST | `/api/auth/register` | Público | Registro con correo institucional `@...udg.mx` |
+| POST | `/api/auth/login` | Público | Devuelve el token JWT (vigencia 8 h) |
+| GET | `/api/proyectos/mi-proyecto` | Todos | Proyecto, entregas, hitos y notificaciones del usuario |
+| POST | `/api/entregas/subir` | Estudiante | Sube un PDF (`form-data`: `archivo`, `hito_id`) |
+| GET | `/api/entregas/pendientes` | Docente | Bandeja de entregas en revisión |
+| POST | `/api/entregas/:id/dictamen` | Docente | `{ dictamen, comentario }`; avanza la fase al aprobar todos los hitos |
+| GET · POST · DELETE | `/api/disponibilidad[/:id]` | Docente | Consultar, registrar o desmarcar bloques de horario |
+| GET | `/api/proyectos/horarios-disponibles` | Estudiante | Horarios del comité asignado |
+| POST | `/api/proyectos/confirmar-examen` | Estudiante | `{ fecha, horario }`; registra hasta 3 opciones |
 
 ---
 
@@ -131,12 +185,14 @@ Time:        2.548 s
 
 | Capa | Tecnología |
 | :--- | :--- |
-| **Frontend** | React |
-| **Backend** | Node.js (Express) |
-| **Base de Datos** | PostgreSQL / MySQL Workbench |
-| **Autenticación** | JWT (JSON Web Tokens) |
-| **Testing** | Jest |
-| **Hosting & CI/CD** | Vercel / GitHub Actions |
+| **Frontend** | React 19 + Vite |
+| **Backend** | Node.js + Express 5 |
+| **Base de Datos** | MySQL 8 / MariaDB |
+| **Autenticación** | JWT (JSON Web Tokens) + bcrypt |
+| **Carga de archivos** | Multer (solo PDF, máx. 10 MB) |
+| **Testing** | Jest + Supertest |
+| **CI/CD** | GitHub Actions |
+| **Hosting (planeado)** | Vercel (frontend) / Render (backend) |
 
 ---
 
@@ -144,85 +200,85 @@ Time:        2.548 s
 
 ```text
 TesisTrack/
-├── .github/                           # Flujos de trabajo de CI/CD y plantillas de GitHub
-├── docs/                              # Documentación técnica y administrativa del proyecto
-│   ├── adr/                           # Architecture Decision Records (Registros de decisiones de arquitectura)
-│   ├── bloqueos/                      # Registro de impedimentos y bloqueos del equipo de desarrollo
-│   ├── dt/                            # Registro y seguimiento de deuda técnica
-│   ├── screenshots/                   # Capturas de pantalla de la interfaz para la documentación
-│   └── CASOS_DE_PRUEBA.md             # Definición y guiones de casos de prueba
-├── TesisTrack-Backend/                # Servidor API REST y lógica de negocio (Node.js/Express)
-│   ├── controllers/                   # Controladores que manejan las solicitudes HTTP y la lógica
-│   ├── middlewares/                   # Funciones intermedias (autenticación JWT, validaciones, CORS)
-│   ├── routes/                        # Definición de rutas y endpoints de la API
-│   ├── tests/                         # Pruebas automatizadas del servidor
-│   │   ├── e2e.test.js                # Pruebas de extremo a extremo (End-to-End)
-│   │   ├── integration.test.js        # Pruebas de integración entre componentes y base de datos
-│   │   └── unit.test.js               # Pruebas unitarias de funciones aisladas
-│   ├── .env                           # Variables de entorno locales (credenciales y puertos)
-│   ├── db.js                          # Configuración de la conexión a la base de datos (MySQL)
-│   ├── package-lock.json              # Árbol de dependencias exacto instalado en backend
-│   ├── package.json                   # Dependencias y scripts del entorno backend
-│   └── server.js                      # Punto de entrada principal del servidor Express
-├── TesisTrack-Frontend/               # Aplicación web cliente (React + Vite)
-│   ├── public/                        # Archivos estáticos accesibles directamente por el navegador
-│   ├── src/                           # Código fuente principal de la interfaz
-│   │   ├── assets/                    # Recursos multimedios (imágenes, logos, íconos)
-│   │   ├── componentes/               # Componentes de interfaz de usuario reutilizables
-│   │   ├── pages/                     # Vistas y pantallas principales de la aplicación
-│   │   ├── services/                  # Cliente HTTP (Axios) para consumir la API del backend
-│   │   └── styles/                    # Hojas de estilo globales y CSS modular
-│   ├── index.html                     # Plantilla HTML base de la SPA (Single Page Application)
-│   ├── package-lock.json              # Árbol de dependencias exacto instalado en frontend
-│   ├── package.json                   # Dependencias y scripts del entorno frontend
-│   └── vite.config.js                 # Configuración del empaquetador y servidor de desarrollo Vite
-├── .gitignore                         # Archivos y carpetas excluidos del control de versiones
-└── README.md                          # Documentación principal del repositorio
+├── .github/
+│   ├── workflows/pruebas.yml          # CI: instala y ejecuta las pruebas en cada push y PR
+│   └── pull_request_template.md       # Plantilla que se llena al abrir un PR
+├── docs/
+│   ├── adr/                           # Registros de decisiones de arquitectura
+│   ├── bloqueos/                      # Registro de impedimentos del equipo
+│   ├── dt/                            # Registro de deuda técnica
+│   ├── screenshots/                   # Capturas de la interfaz
+│   └── CASOS_DE_PRUEBA.md             # Matriz de 30 casos, evidencia y defectos encontrados
+├── TesisTrack-Backend/
+│   ├── config/                        # Conexión a MySQL (db.js) y secreto JWT (jwt.js)
+│   ├── controllers/                   # Lógica de auth, proyectos, entregas, dictamen, disponibilidad y examen
+│   ├── database/                      # SQUEMA.sql (tablas) y DATA.sql (datos de ejemplo)
+│   ├── middlewares/                   # Verificación de token y rol; carga de PDF
+│   ├── routes/                        # Definición de endpoints
+│   ├── tests/                         # Pruebas unitarias, de integración y de aceptación
+│   │   └── helpers/                   # Base de datos simulada y datos de prueba
+│   ├── utils/validaciones.js          # Reglas de negocio reutilizables
+│   ├── app.js                         # Configuración de Express (la usan el servidor y las pruebas)
+│   ├── server.js                      # Punto de entrada: enciende la API
+│   ├── sembrarHashes.js               # Asigna contraseñas a las cuentas de prueba
+│   └── .env.example                   # Plantilla de variables de entorno
+├── TesisTrack-Frontend/
+│   └── src/
+│       ├── components/                # Componentes y dashboards por rol
+│       ├── pages/                     # Login, registro y paneles
+│       ├── services/api.js            # Cliente Axios con el token JWT
+│       └── styles/                    # Hojas de estilo
+├── LICENSE
+└── README.md
 ```
 
 ---
 
-## 📑 Documentación Técnica (ADRs, Bloqueos, Deudas Técnicas)
+## 📑 Documentación Técnica
 
-* **Architecture Decision Records:** Consulta los registros de decisiones arquitectónicas en [`docs/adr/`](./docs/adr/).
-* **Bloqueos:** Consulta e registro de impedimentos y bloqueos del equipo de desarrollo [`docs/bloqueos/`](./docs/bloqueos/).
-* **Registro de Deuda Técnica:** Consulta el seguimiento de deuda técnica acumulada en [`docs/dt/`](./docs/dt/).
+* **Decisiones de arquitectura (ADRs):** [`docs/adr/`](./docs/adr/)
+* **Bloqueos:** [`docs/bloqueos/`](./docs/bloqueos/)
+* **Deuda técnica:** [`docs/dt/`](./docs/dt/)
+* **Casos de prueba:** [`docs/CASOS_DE_PRUEBA.md`](./docs/CASOS_DE_PRUEBA.md)
 
 ---
 
 ## 🤝 Contribución
 
-¡Cualquier contribución es bienvenida! Sigue estos pasos para colaborar:
+El equipo trabaja con ramas y Pull Requests revisados. **Ningún cambio entra a `main` sin la aprobación de otro integrante.**
 
-1. Haz un **Fork** del repositorio.
+1. Actualiza `main` (en GitHub Desktop: *Fetch origin* → *Pull origin*).
+2. Crea una rama con el prefijo del tipo de cambio: `feat/`, `fix/`, `test/` o `docs/`. Ejemplo: `feat/dashboard-asesor`.
+3. Haz tus cambios y verifica que `npm test` pase.
+4. Haz commits con el formato de Conventional Commits:
+   `tipo(módulo): descripción`, por ejemplo `fix(auth): usar password_hash`.
+5. Publica la rama y abre un **Pull Request**. Llena la plantilla y asigna a un revisor.
+6. El revisor deja comentarios en **Files changed** y marca **Approve** o **Request changes**.
+7. Se hace **merge** solo con la aprobación y con GitHub Actions en verde ✅.
 
-2. Crea una rama para tu aporte:  
-   `git checkout -b feature/nueva-funcionalidad`
+### Tipos de commit
+- `feat:` nueva funcionalidad
+- `fix:` corrección de un error
+- `test:` agregar o modificar pruebas
+- `docs:` documentación
+- `refactor:` cambio de código sin alterar su comportamiento
+- `chore:` mantenimiento o configuración
 
-3. Guarda tus cambios con commits significativos (Conventional Commits):  
-   `git commit -m "feat(modulo): add nueva funcionalidad"`
+---
 
-4. Sube tu rama a GitHub:  
-   `git push origin feature/nueva-funcionalidad`
+## 📄 Licencia
 
-5. Abre un **Pull Request** detallando tus cambios.
-
-### Convenciones de Commits
-- `feat:` Nueva funcionalidad.
-- `docs:` Adición de documentación.
-- `fix:` Corrección de error/bug.
-- `update:` Cambios en la documentación.
-- `refactor:` Refactorización de código sin cambiar funcionalidad.
-- `test:` Adición o actualización de pruebas.
-- `chore:` Tareas de mantenimiento o configuración.
+Este proyecto se distribuye bajo la licencia **MIT**. Consulta el archivo [`LICENSE`](./LICENSE) para más detalles.
 
 ---
 
 ## 👥 Autores
 
+Proyecto del **Seminario de Integración: Desarrollo** (7mo semestre, Grupo A), Centro Universitario de Tlaquepaque. Facilitadora: Deborah Leticia Villaseñor Basulto.
+
 | Nombre | Rol | GitHub |
 | :--- | :--- | :--- |
-| **Marisol Huerta** | Product Owner | [@MarisolHuertaa](https://github.com/MarisolHuertaa) |
+| **Marisol Huerta Catarino** | Product Owner | [@MarisolHuertaa](https://github.com/MarisolHuertaa) |
 | **Isaí Plascencia Tapia** | Scrum Master | [@isai15200502-cell](https://github.com/isai15200502-cell) |
 | **Laura Paola García Casillas** | Development Team | [@Paurilulu](https://github.com/Paurilulu) |
 | **Héctor Jovany Padilla López** | Development Team | [@hector09padillalopez-beep](https://github.com/hector09padillalopez-beep) |
