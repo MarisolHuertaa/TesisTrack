@@ -16,7 +16,10 @@ export default function DashboardCoordinacion() {
   const [proyectos, setProyectos] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Navegación de barra lateral y filtros
+  // Datos del coordinador logueado (sin número de empleado)
+  const [nombreCoordinador, setNombreCoordinador] = useState('Coordinación Académica');
+
+  // Navegación exclusiva del Sidebar de Coordinación
   const [seccionActiva, setSeccionActiva] = useState('general');
   const [filtroEstado, setFiltroEstado] = useState('Todos');
   const [busqueda, setBusqueda] = useState('');
@@ -28,8 +31,25 @@ export default function DashboardCoordinacion() {
   const [notificacion, setNotificacion] = useState('');
 
   useEffect(() => {
+    cargarDatosUsuario();
     cargarProyectosBD();
   }, []);
+
+  const cargarDatosUsuario = () => {
+    try {
+      const userRaw = localStorage.getItem('user') || localStorage.getItem('usuario');
+      if (userRaw) {
+        const userObj = JSON.parse(userRaw);
+        if (userObj?.nombre) {
+          setNombreCoordinador(userObj.nombre);
+        } else if (userObj?.email) {
+          setNombreCoordinador(userObj.email.split('@')[0]);
+        }
+      }
+    } catch (e) {
+      // Mantiene título por defecto si no hay JSON en localStorage
+    }
+  };
 
   const mostrarToast = (mensaje) => {
     setNotificacion(mensaje);
@@ -102,14 +122,22 @@ export default function DashboardCoordinacion() {
     }
   };
 
-  // Cambiar pestaña desde la barra lateral de Coordinación
+  const obtenerIniciales = (nombre) => {
+    if (!nombre) return 'TT';
+    return nombre
+      .split(' ')
+      .slice(0, 2)
+      .map((n) => n[0])
+      .join('')
+      .toUpperCase();
+  };
+
   const handleCambiarSeccionSidebar = (seccion) => {
     setSeccionActiva(seccion);
     if (seccion === 'general') setFiltroEstado('Todos');
     if (seccion === 'actas') setFiltroEstado('Aprobado');
   };
 
-  // Guardar asignación de asesor
   const confirmarAsignacionAsesor = async (e) => {
     e.preventDefault();
     if (!asesorElegido || !proyectoAsignar) return;
@@ -119,7 +147,7 @@ export default function DashboardCoordinacion() {
         asesor: asesorElegido,
       });
     } catch (error) {
-      console.warn('Actualizando en estado local (pendiente conectar endpoint PUT):', error);
+      console.warn('Actualizando en estado local:', error);
     }
 
     setProyectos((prev) =>
@@ -132,10 +160,9 @@ export default function DashboardCoordinacion() {
     setAsesorElegido('');
   };
 
-  // Exportar reporte global real en CSV
   const handleExportarCSV = () => {
     const encabezados = [
-      'Codigo',
+      'ID',
       'Estudiante',
       'Carrera',
       'Proyecto',
@@ -145,7 +172,7 @@ export default function DashboardCoordinacion() {
       'Estatus',
     ];
     const filas = proyectos.map((p) => [
-      p.codigoEstudiante,
+      p.id,
       `"${p.estudiante}"`,
       `"${p.carrera}"`,
       `"${p.titulo}"`,
@@ -168,7 +195,6 @@ export default function DashboardCoordinacion() {
     mostrarToast('Reporte global descargado en formato CSV');
   };
 
-  // Descargar Acta QR (H10)
   const handleDescargarActaQR = async (estudiante) => {
     try {
       const response = await API.get(`/coordinacion/proyectos/${estudiante.id}/acta-qr`, {
@@ -177,26 +203,36 @@ export default function DashboardCoordinacion() {
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', `Acta_QR_${estudiante.codigoEstudiante}.pdf`);
+      link.setAttribute('download', `Acta_QR_${estudiante.id}.pdf`);
       document.body.appendChild(link);
       link.click();
       link.remove();
     } catch (error) {
-      mostrarToast(`Acta Digital QR generada para ${estudiante.estudiante} (${estudiante.codigoEstudiante})`);
+      mostrarToast(`Acta Digital QR generada para ${estudiante.estudiante}`);
     }
   };
 
   const handleLogout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    localStorage.removeItem('usuario');
+    localStorage.removeItem('rol');
+    localStorage.removeItem('rol_id');
     navigate('/login');
   };
 
-  // Contadores para badges de la barra lateral
+  // Métricas dinámicas
+  const totalProyectos = proyectos.length || 1;
   const totalSinAsesor = proyectos.filter((p) => p.asesor === 'Sin Asignar').length;
   const totalAlertas = proyectos.filter((p) => p.estadoSemaforo === 'Rojo').length;
-  const totalActas = proyectos.filter((p) => p.estado === 'Aprobado').length;
+  const totalAprobados = proyectos.filter((p) => p.estado === 'Aprobado').length;
+  const totalEnRevision = proyectos.filter((p) => p.estado === 'En Revisión').length;
+  const totalPendientes = proyectos.filter((p) => p.estado === 'Pendiente').length;
 
-  // Filtrado combinado (Sidebar + Pestañas + Buscador)
+  const pctAprobados = Math.round((totalAprobados / totalProyectos) * 100);
+  const pctRevision = Math.round((totalEnRevision / totalProyectos) * 100);
+  const pctPendientes = Math.round((totalPendientes / totalProyectos) * 100);
+
   const proyectosFiltrados = proyectos.filter((p) => {
     if (seccionActiva === 'sin-asesor' && p.asesor !== 'Sin Asignar') return false;
     if (seccionActiva === 'alertas' && p.estadoSemaforo !== 'Rojo') return false;
@@ -209,10 +245,10 @@ export default function DashboardCoordinacion() {
     if (busqueda.trim() !== '') {
       const q = busqueda.toLowerCase();
       return (
-        p.estudiante.toLowerCase().includes(q) ||
-        p.codigoEstudiante.toLowerCase().includes(q) ||
-        p.titulo.toLowerCase().includes(q) ||
-        p.asesor.toLowerCase().includes(q)
+        p.estudiante?.toLowerCase().includes(q) ||
+        p.titulo?.toLowerCase().includes(q) ||
+        p.asesor?.toLowerCase().includes(q) ||
+        p.carrera?.toLowerCase().includes(q)
       );
     }
 
@@ -221,24 +257,24 @@ export default function DashboardCoordinacion() {
 
   return (
     <div className="coord-layout">
-      {/* BARRA LATERAL EXCLUSIVA DE COORDINACIÓN */}
+      {/* BARRA LATERAL EXCLUSIVA DE COORDINACIÓN (SIN MENÚ DE ESTUDIANTE NI NÚMERO DE EMPLEADO) */}
       <aside className="coord-sidebar">
         <div className="coord-brand">
           <div className="brand-logo-box">TT</div>
           <div>
             <span className="brand-name">TesisTrack</span>
-            <span className="brand-role-badge">Coordinación</span>
+            <span className="brand-role-badge">Rol: Coordinación</span>
           </div>
         </div>
 
-        <div className="sidebar-section-label">GESTIÓN ACADÉMICA</div>
+        <div className="sidebar-section-label">GESTIÓN DE TITULACIÓN</div>
         <nav className="coord-nav">
           <button
             className={`coord-nav-item ${seccionActiva === 'general' ? 'active' : ''}`}
             onClick={() => handleCambiarSeccionSidebar('general')}
           >
             <span className="nav-icon">📊</span>
-            <span>Panel General</span>
+            <span>Directorio de Tesis</span>
           </button>
 
           <button
@@ -268,17 +304,22 @@ export default function DashboardCoordinacion() {
             onClick={() => handleCambiarSeccionSidebar('actas')}
           >
             <span className="nav-icon">📱</span>
-            <span>Actas y Códigos QR</span>
-            <span className="nav-badge badge-green">{totalActas}</span>
+            <span>Emisión Actas QR</span>
+            <span className="nav-badge badge-green">{totalAprobados}</span>
           </button>
         </nav>
 
+        <div className="sidebar-info-box">
+          <span className="info-box-title">Supervisión Activa</span>
+          <span className="info-box-sub">Alerta automática: &gt; 10 días sin avance</span>
+        </div>
+
         <div className="coord-sidebar-footer">
           <div className="coord-user-card">
-            <div className="user-avatar">CA</div>
+            <div className="user-avatar">{obtenerIniciales(nombreCoordinador)}</div>
             <div className="user-meta">
-              <span className="user-name">Coordinador Académico</span>
-              <span className="user-dept">Ing. de Software</span>
+              <span className="user-name">{nombreCoordinador}</span>
+              <span className="user-dept">Coordinación Académica</span>
             </div>
           </div>
           <button className="btn-sidebar-logout" onClick={handleLogout}>
@@ -297,10 +338,10 @@ export default function DashboardCoordinacion() {
 
         <header className="page-header">
           <div>
-            <span className="header-eyebrow">Módulo de Supervisión Institucional</span>
+            <span className="header-eyebrow">Administración y Seguimiento</span>
             <h1 className="page-title">Panel de Coordinación Académica</h1>
             <p className="page-subtitle">
-              Monitoreo integral de tesis, control de tiempos de revisión y asignación de asesores.
+              Control centralizado de proyectos de tesis, asignación de asesores y validación de actas.
             </p>
           </div>
           <div className="header-actions">
@@ -310,42 +351,77 @@ export default function DashboardCoordinacion() {
           </div>
         </header>
 
-        {/* Tarjetas KPI */}
+        {/* Tarjetas KPI (Interactivas al hacer clic) */}
         <section className="kpi-grid">
-          <div className="card-surface kpi-card kpi-indigo">
+          <div
+            className="card-surface kpi-card kpi-indigo clickable-card"
+            onClick={() => handleCambiarSeccionSidebar('general')}
+          >
             <div className="kpi-top">
               <span className="kpi-label">Total Tesis Activas</span>
-              <span className="kpi-icon">📚</span>
+              <span className="kpi-icon-pill bg-indigo-soft">📚</span>
             </div>
             <span className="kpi-value">{proyectos.length}</span>
-            <span className="kpi-foot">Ciclo escolar vigente</span>
+            <span className="kpi-foot">Ver directorio completo</span>
           </div>
 
-          <div className="card-surface kpi-card kpi-amber">
+          <div
+            className="card-surface kpi-card kpi-amber clickable-card"
+            onClick={() => handleCambiarSeccionSidebar('sin-asesor')}
+          >
             <div className="kpi-top">
               <span className="kpi-label">Sin Asesor Asignado</span>
-              <span className="kpi-icon">⏳</span>
+              <span className="kpi-icon-pill bg-amber-soft">⏳</span>
             </div>
             <span className="kpi-value highlight-amber">{totalSinAsesor}</span>
-            <span className="kpi-foot">Requieren asignación</span>
+            <span className="kpi-foot">Filtrar pendientes de asesor</span>
           </div>
 
-          <div className="card-surface kpi-card kpi-red">
+          <div
+            className="card-surface kpi-card kpi-red clickable-card"
+            onClick={() => handleCambiarSeccionSidebar('alertas')}
+          >
             <div className="kpi-top">
               <span className="kpi-label">Alertas de Semáforo</span>
-              <span className="kpi-icon">⚠️</span>
+              <span className="kpi-icon-pill bg-red-soft">⚠️</span>
             </div>
             <span className="kpi-value highlight-red">{totalAlertas}</span>
-            <span className="kpi-foot">&gt; 10 días sin avance</span>
+            <span className="kpi-foot">Filtrar proyectos con atraso</span>
           </div>
 
-          <div className="card-surface kpi-card kpi-green">
+          <div
+            className="card-surface kpi-card kpi-green clickable-card"
+            onClick={() => handleCambiarSeccionSidebar('actas')}
+          >
             <div className="kpi-top">
-              <span className="kpi-label">Actas QR Listas (H10)</span>
-              <span className="kpi-icon">✅</span>
+              <span className="kpi-label">Actas QR Listas</span>
+              <span className="kpi-icon-pill bg-green-soft">✅</span>
             </div>
-            <span className="kpi-value highlight-green">{totalActas}</span>
-            <span className="kpi-foot">Listas para titulación</span>
+            <span className="kpi-value highlight-green">{totalAprobados}</span>
+            <span className="kpi-foot">Filtrar aprobadas para defensa</span>
+          </div>
+        </section>
+
+        {/* Barra de distribución visual de estados */}
+        <section className="card-surface distribution-card">
+          <div className="distribution-header">
+            <span className="distribution-title">Distribución Global de Estatus</span>
+            <div className="distribution-legend">
+              <span className="legend-item">
+                <i className="dot-green" /> Aprobado ({pctAprobados}%)
+              </span>
+              <span className="legend-item">
+                <i className="dot-indigo" /> En Revisión ({pctRevision}%)
+              </span>
+              <span className="legend-item">
+                <i className="dot-slate" /> Pendiente ({pctPendientes}%)
+              </span>
+            </div>
+          </div>
+          <div className="stacked-bar">
+            <div className="bar-seg-green" style={{ width: `${pctAprobados}%` }} />
+            <div className="bar-seg-indigo" style={{ width: `${pctRevision}%` }} />
+            <div className="bar-seg-slate" style={{ width: `${pctPendientes}%` }} />
           </div>
         </section>
 
@@ -356,17 +432,17 @@ export default function DashboardCoordinacion() {
               <span className="alert-icon">⚠️</span>
               <div>
                 <h4 className="alert-title">
-                  Atención Requerida: {totalAlertas} proyectos superan el límite de 10 días sin revisión
+                  Atención: {totalAlertas} proyectos superan los 10 días sin retroalimentación
                 </h4>
                 <p className="alert-desc">
-                  Revisa los proyectos marcados en rojo o filtra desde la barra lateral en "Semáforo de Atrasos".
+                  Usa la sección "Semáforo de Atrasos" en tu barra lateral de Coordinación para dar seguimiento.
                 </p>
               </div>
             </div>
           </section>
         )}
 
-        {/* Tabla Principal */}
+        {/* Tabla de Monitoreo */}
         <section className="card-surface table-section">
           <div className="table-header-toolbar">
             <div>
@@ -382,7 +458,7 @@ export default function DashboardCoordinacion() {
               <input
                 type="text"
                 className="search-input"
-                placeholder="Buscar alumno, código o tesis..."
+                placeholder="Buscar alumno, tesis o asesor..."
                 value={busqueda}
                 onChange={(e) => setBusqueda(e.target.value)}
               />
@@ -426,14 +502,19 @@ export default function DashboardCoordinacion() {
                   {proyectosFiltrados.map((item) => (
                     <tr key={item.id}>
                       <td>
-                        <div className="student-name">{item.estudiante}</div>
-                        <div className="student-code">{item.codigoEstudiante}</div>
+                        <div className="student-cell">
+                          <div className="student-avatar-initials">
+                            {obtenerIniciales(item.estudiante)}
+                          </div>
+                          <div>
+                            <div className="student-name">{item.estudiante}</div>
+                            <div className="student-code">{item.carrera}</div>
+                          </div>
+                        </div>
                       </td>
                       <td>
                         <div className="project-title">{item.titulo}</div>
-                        <div className="project-sub">
-                          {item.fase} • {item.carrera}
-                        </div>
+                        <div className="project-sub">{item.fase}</div>
                       </td>
                       <td>
                         {item.asesor === 'Sin Asignar' ? (
@@ -510,7 +591,7 @@ export default function DashboardCoordinacion() {
             <div className="modal-card" onClick={(e) => e.stopPropagation()}>
               <h3 className="modal-title">Asignación de Asesor de Tesis</h3>
               <p className="modal-desc">
-                Estudiante: <strong>{proyectoAsignar.estudiante}</strong> ({proyectoAsignar.codigoEstudiante})
+                Estudiante: <strong>{proyectoAsignar.estudiante}</strong>
               </p>
               <p className="modal-project-name">"{proyectoAsignar.titulo}"</p>
 
@@ -563,9 +644,7 @@ export default function DashboardCoordinacion() {
               <div className="detail-grid">
                 <div className="detail-item">
                   <span className="detail-label">Estudiante</span>
-                  <span className="detail-value">
-                    {proyectoDetalle.estudiante} ({proyectoDetalle.codigoEstudiante})
-                  </span>
+                  <span className="detail-value">{proyectoDetalle.estudiante}</span>
                 </div>
                 <div className="detail-item">
                   <span className="detail-label">Programa Académico</span>
