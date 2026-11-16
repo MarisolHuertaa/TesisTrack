@@ -24,3 +24,8 @@ Se decidió implementar **GitHub Actions** configurando el archivo `.github/work
 
 ### Negativas / Riesgos
 * Dependencia de la disponibilidad de minutos de ejecución de GitHub Actions.
+
+---
+
+## Historial
+* **2026-11-11:** el workflow usa Node.js 20, caché de `npm`, `npm ci` (instala exactamente las versiones del `package-lock.json`) y `npm run test:coverage` (publica la tabla de cobertura en el log de cada ejecución).

@@ -1,0 +1,13 @@
+## Resumen
+Se actualiza el módulo de **Coordinación Académica** en **TesisTrack** para separar por completo su navegación de la vista de estudiantes y añadir herramientas interactivas de seguimiento y gestión de tesis.
+
+### Cambios principales
+- **Sidebar exclusivo de Coordinación:** Menú lateral independiente con contadores en vivo (badges) para navegar entre *Panel General*, *Asignación Docente*, *Semáforo de Atrasos* y *Actas QR*, además de control de cierre de sesión.
+- **Modales interactivos y notificaciones:** Se reemplazaron las alertas nativas por modales estilizados para asignar/reasignar asesores y consultar el expediente detallado de cada proyecto (con barra de progreso), acompañados de notificaciones tipo *toast*.
+- **Buscador y filtros combinados:** Búsqueda en tiempo real por estudiante, matrícula, título o asesor, integrada con los filtros de estatus (`Todos`, `Pendiente`, `En Revisión`, `Aprobado`).
+- **Exportación CSV:** Descarga directa del reporte global en formato `.csv` compatible con Excel y Numbers.
+- **Conexión a API con respaldo:** Preparado para consumir los endpoints del backend (`GET` y `PUT`) con datos *fallback* locales para mantener la vista funcional aunque el servidor no esté levantado.
+
+### Archivos modificados
+- `TesisTrack-Frontend/src/pages/DashboardCoordinacion.jsx`
+- `TesisTrack-Frontend/src/pages/DashboardCoordinacion.css`

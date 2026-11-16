@@ -2,12 +2,12 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { NotificationsDropdown } from './NotificationsDropdown';
 
-export const Navbar = ({ activeTab, setActiveTab }) => {
+export const Navbar = ({ activeTab, setActiveTab, notificaciones = [] }) => {
   const navigate = useNavigate();
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   const user = JSON.parse(localStorage.getItem('user')) || {
-    nombre: 'Marisol Huerta',
+    nombre: 'Laura Paola',
     rol: 'Estudiante',
   };
 
@@ -39,8 +39,11 @@ export const Navbar = ({ activeTab, setActiveTab }) => {
 
         {/* Sección Derecha: Campanita de Notificaciones + Botón de Perfil */}
         <div className="navbar-right">
-          {/* Menú Desplegable de Notificaciones */}
-          <NotificationsDropdown onNavigateTab={(tab) => setActiveTab(tab)} />
+          {/* Menú Desplegable de Notificaciones conectadas a MariaDB */}
+          <NotificationsDropdown 
+            notificaciones={notificaciones} 
+            onNavigateTab={(tab) => setActiveTab(tab)} 
+          />
 
           {/* Botón de Perfil / Drawer Trigger */}
           <button className="user-menu-trigger" onClick={() => setDrawerOpen(true)}>
