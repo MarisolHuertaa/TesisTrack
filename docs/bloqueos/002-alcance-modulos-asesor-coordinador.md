@@ -1,6 +1,6 @@
 # 002. Limitación de Alcance por Ausencia de Módulos de Asesor y Coordinador
 
-* **Estado:** Mitigado / Acotado
+* **Estado:** Resuelto en el backend (2026-11-11)
 * **Módulo Afectado:** Casos de Prueba / Módulo General
 
 ---
@@ -23,3 +23,8 @@ Se decidió acotar el alcance del entregable de pruebas automatizadas al 100% de
 
 ### Negativas / Riesgos
 * Queda pendiente como deuda técnica la creación de pruebas automatizadas para los flujos de interacción entre múltiples roles cuando dichos módulos sean construidos.
+
+---
+
+## Actualización (2026-11-11)
+Se implementaron en el backend las rutas del asesor (bandeja de pendientes, dictamen y disponibilidad) y del agendado de examen, con pruebas de aceptación que recorren flujos entre roles (CP-21 a CP-30). Las interfaces están en desarrollo: el dashboard del asesor (Laura García e Isaí Plascencia) y el panel de coordinación (Gaizka Camacho y Héctor Padilla). Las rutas `/api/coordinacion/*` siguen pendientes (DT-009).

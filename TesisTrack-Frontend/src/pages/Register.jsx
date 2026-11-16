@@ -9,7 +9,6 @@ export default function Register() {
     correo: '',
     password: '',
     rol_id: '1',
-    codigo_empleado: '',
     departamento: 'Coordinación de Ingeniería de Software',
     nivel: 'Licenciatura',
   });
@@ -131,19 +130,6 @@ export default function Register() {
               gap: '12px',
             }}
           >
-            <div className="form-group">
-              <label>Código / Num. de Empleado</label>
-              <input
-                type="text"
-                name="codigo_empleado"
-                className="form-control"
-                placeholder="EMP-99482"
-                value={formData.codigo_empleado}
-                onChange={handleChange}
-                required
-              />
-            </div>
-
             <div className="form-group">
               <label>Coordinación Académica</label>
               <select
