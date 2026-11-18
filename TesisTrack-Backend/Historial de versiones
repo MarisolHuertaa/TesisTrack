@@ -1,0 +1,79 @@
+ Historial de versiones de cada tesis
+CREATE TABLE versiones_tesis (
+    version_id INT AUTO_INCREMENT PRIMARY KEY,
+    proyecto_id INT NOT NULL,
+    numero_version INT NOT NULL,
+    archivo_url VARCHAR(500) NOT NULL,
+    fecha_entrega DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    descripcion_cambios TEXT,
+
+    UNIQUE (proyecto_id, numero_version),
+
+    FOREIGN KEY (proyecto_id)
+        REFERENCES proyectos(proyecto_id)
+        ON DELETE RESTRICT
+);
+
+-- 2. Revisiones realizadas por el asesor
+CREATE TABLE revisiones_tesis (
+    revision_id INT AUTO_INCREMENT PRIMARY KEY,
+    version_id INT NOT NULL,
+    fecha_revision DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    dictamen ENUM(
+        'Pendiente',
+        'Aprobada',
+        'Requiere correcciones'
+    ) NOT NULL DEFAULT 'Pendiente',
+    comentario_general TEXT,
+
+    FOREIGN KEY (version_id)
+        REFERENCES versiones_tesis(version_id)
+        ON DELETE RESTRICT
+);
+
+-- 3. Observaciones específicas de cada revisión
+CREATE TABLE observaciones_tesis (
+    observacion_id INT AUTO_INCREMENT PRIMARY KEY,
+    revision_id INT NOT NULL,
+    ubicacion VARCHAR(255),
+    descripcion TEXT NOT NULL,
+    estado ENUM(
+        'Pendiente',
+        'Corregida',
+        'Aceptada',
+        'Rechazada'
+    ) NOT NULL DEFAULT 'Pendiente',
+    fecha_resolucion DATETIME NULL,
+
+    FOREIGN KEY (revision_id)
+        REFERENCES revisiones_tesis(revision_id)
+        ON DELETE RESTRICT
+);
+
+SELECT
+    v.numero_version,
+    r.fecha_revision,
+    r.dictamen,
+    o.ubicacion,
+    o.descripcion,
+    o.estado
+FROM versiones_tesis AS v
+JOIN revisiones_tesis AS r
+    ON r.version_id = v.version_id
+LEFT JOIN observaciones_tesis AS o
+    ON o.revision_id = r.revision_id
+WHERE v.proyecto_id = 6
+ORDER BY
+    v.numero_version ASC,
+    r.fecha_revision ASC,
+    o.observacion_id ASC;
+
+    SELECT
+    COUNT(*) AS correcciones_pendientes
+FROM observaciones_tesis AS o
+JOIN revisiones_tesis AS r
+    ON r.revision_id = o.revision_id
+JOIN versiones_tesis AS v
+    ON v.version_id = r.version_id
+WHERE v.proyecto_id = 6
+  AND o.estado = 'Pendiente';
