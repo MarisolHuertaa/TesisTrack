@@ -1,0 +1,48 @@
+SELECT
+    estado,
+    COUNT(*) AS total_proyectos
+FROM proyectos
+GROUP BY estado
+ORDER BY total_proyectos DESC;
+
+SELECT
+    COUNT(*) AS total_proyectos,
+    SUM(CASE
+        WHEN estado = 'En revisión' THEN 1
+        ELSE 0
+    END) AS en_revision,
+    SUM(CASE
+        WHEN estado = 'Concluido' THEN 1
+        ELSE 0
+    END) AS concluidos
+FROM proyectos;
+
+SELECT
+    proyecto_id,
+    fecha_limite,
+    estado
+FROM proyectos
+WHERE fecha_limite < CURRENT_DATE
+  AND estado NOT IN ('Concluido', 'Cancelado')
+ORDER BY fecha_limite ASC;
+
+SELECT
+    ROUND(
+        AVG(
+            TIMESTAMPDIFF(
+                HOUR,
+                fecha_entrega,
+                fecha_revision
+            )
+        ),
+        2
+    ) AS promedio_horas_revision
+FROM entregas
+WHERE fecha_revision IS NOT NULL;
+
+SELECT
+    asesor_id,
+    COUNT(*) AS total_proyectos
+FROM proyectos
+GROUP BY asesor_id
+ORDER BY total_proyectos DESC;
