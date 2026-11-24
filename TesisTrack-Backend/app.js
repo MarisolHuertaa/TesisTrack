@@ -24,4 +24,11 @@ app.use('/api/coordinacion', coordinacionRoutes);
 
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 
+app.use((req, res) => {
+    res.status(404).json({
+        error: 'Ruta no encontrada',
+        path: req.originalUrl
+    });
+});
+
 module.exports = app;
