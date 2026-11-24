@@ -14,12 +14,23 @@ export default function Login() {
 
     try {
       const res = await API.post('/auth/login', { correo, password });
+      const user = res.data.usuario;
+
       localStorage.setItem('token', res.data.token);
-      localStorage.setItem('user', JSON.stringify(res.data.usuario));
-      alert(`¡Bienvenido/a ${res.data.usuario.nombre}!`);
-      
-      // Se activa la redirección al Dashboard
-      navigate('/dashboard');
+      localStorage.setItem('user', JSON.stringify(user));
+      alert(`¡Bienvenido/a ${user.nombre}!`);
+
+      // Redirección dinámica validando rol_id, nombre de rol o correo institucional
+      const rolId = Number(user.rol_id);
+      const rolNombre = String(user.rol || '').toUpperCase();
+
+      if (rolId === 3 || rolNombre === 'COORDINADOR' || user.correo === 'coordinacion.titulacion@udg.mx') {
+        navigate('/dashboard-coordinacion');
+      } else if (rolId === 2 || rolNombre === 'DOCENTE') {
+        navigate('/dashboard'); // Cambia a '/dashboard-docente' cuando integres el PR #10 de Laura
+      } else {
+        navigate('/dashboard');
+      }
     } catch (err) {
       setError(err.response?.data?.mensaje || 'Credenciales inválidas');
     }
