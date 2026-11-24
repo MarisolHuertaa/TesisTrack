@@ -3,20 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import API from '../services/api';
 import './DashboardCoordinacion.css';
 
-const ASESORES_DISPONIBLES = [
-  'Dr. Roberto Martínez',
-  'Dra. María Elena Ríos',
-  'Mtro. Carlos Alberto Mendoza',
-  'Dra. Laura Patricia Gómez',
-  'Dr. Jorge Luis Navarro',
-];
-
 export default function DashboardCoordinacion() {
   const navigate = useNavigate();
   const [proyectos, setProyectos] = useState([]);
+  const [docentes, setDocentes] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [errorCarga, setErrorCarga] = useState('');
 
-  // Datos del coordinador logueado (sin número de empleado)
+  // Datos del coordinador logueado
   const [nombreCoordinador, setNombreCoordinador] = useState('Coordinación Académica');
 
   // Navegación exclusiva del Sidebar de Coordinación
@@ -26,13 +20,13 @@ export default function DashboardCoordinacion() {
 
   // Modales interactivos y notificaciones
   const [proyectoAsignar, setProyectoAsignar] = useState(null);
-  const [asesorElegido, setAsesorElegido] = useState('');
+  const [docenteElegidoId, setDocenteElegidoId] = useState('');
   const [proyectoDetalle, setProyectoDetalle] = useState(null);
   const [notificacion, setNotificacion] = useState('');
 
   useEffect(() => {
     cargarDatosUsuario();
-    cargarProyectosBD();
+    cargarDatosRealesBD();
   }, []);
 
   const cargarDatosUsuario = () => {
@@ -56,67 +50,19 @@ export default function DashboardCoordinacion() {
     setTimeout(() => setNotificacion(''), 3500);
   };
 
-  const cargarProyectosBD = async () => {
+  const cargarDatosRealesBD = async () => {
     setLoading(true);
+    setErrorCarga('');
     try {
-      const response = await API.get('/coordinacion/proyectos');
-      setProyectos(response.data);
-    } catch (error) {
-      console.warn('Usando datos de respaldo mientras el endpoint responde:', error);
-      setProyectos([
-        {
-          id: 1,
-          estudiante: 'Ana María Gómez',
-          codigoEstudiante: '21948201',
-          carrera: 'Ingeniería de Software',
-          titulo: 'Sistema Web para Gestión de Tesis (TesisTrack)',
-          asesor: 'Dr. Roberto Martínez',
-          fase: 'Capítulo 2: Marco Teórico',
-          progreso: 55,
-          diasSinAvance: 12,
-          estadoSemaforo: 'Rojo',
-          estado: 'En Revisión',
-        },
-        {
-          id: 2,
-          estudiante: 'Luis Fernando Torres',
-          codigoEstudiante: '21839210',
-          carrera: 'Ingeniería de Software',
-          titulo: 'Análisis de Deuda Técnica en Proyectos Ágiles',
-          asesor: 'Sin Asignar',
-          fase: 'Capítulo 1: Protocolo',
-          progreso: 20,
-          diasSinAvance: 3,
-          estadoSemaforo: 'Verde',
-          estado: 'Pendiente',
-        },
-        {
-          id: 3,
-          estudiante: 'Sofía Hernández',
-          codigoEstudiante: '21759302',
-          carrera: 'Ciencias Computacionales',
-          titulo: 'Aplicación Móvil para Monitoreo de Redes',
-          asesor: 'Dra. María Elena Ríos',
-          fase: 'Defensa Final',
-          progreso: 100,
-          diasSinAvance: 0,
-          estadoSemaforo: 'Verde',
-          estado: 'Aprobado',
-        },
-        {
-          id: 4,
-          estudiante: 'Diego Alejandro Ruiz',
-          codigoEstudiante: '21988412',
-          carrera: 'Ingeniería en Computación',
-          titulo: 'Detección de Anomalías en Tráfico IoT con Machine Learning',
-          asesor: 'Sin Asignar',
-          fase: 'Capítulo 1: Protocolo',
-          progreso: 15,
-          diasSinAvance: 14,
-          estadoSemaforo: 'Rojo',
-          estado: 'Pendiente',
-        },
+      const [resProyectos, resDocentes] = await Promise.all([
+        API.get('/coordinacion/proyectos'),
+        API.get('/coordinacion/docentes'),
       ]);
+      setProyectos(resProyectos.data);
+      setDocentes(resDocentes.data);
+    } catch (error) {
+      console.error('Error al conectar con MariaDB:', error);
+      setErrorCarga('No se pudieron cargar los registros desde MariaDB. Verifica que el backend esté activo.');
     } finally {
       setLoading(false);
     }
@@ -140,31 +86,37 @@ export default function DashboardCoordinacion() {
 
   const confirmarAsignacionAsesor = async (e) => {
     e.preventDefault();
-    if (!asesorElegido || !proyectoAsignar) return;
+    if (!docenteElegidoId || !proyectoAsignar) return;
+
+    const docenteObj = docentes.find((d) => String(d.id) === String(docenteElegidoId));
+    const nombreDocente = docenteObj ? docenteObj.nombreCompleto : 'Docente asignado';
 
     try {
       await API.put(`/coordinacion/proyectos/${proyectoAsignar.id}/asignar`, {
-        asesor: asesorElegido,
+        docenteId: Number(docenteElegidoId),
       });
-    } catch (error) {
-      console.warn('Actualizando en estado local:', error);
-    }
 
-    setProyectos((prev) =>
-      prev.map((p) =>
-        p.id === proyectoAsignar.id ? { ...p, asesor: asesorElegido } : p
-      )
-    );
-    mostrarToast(`Asesor ${asesorElegido} asignado a ${proyectoAsignar.estudiante}`);
-    setProyectoAsignar(null);
-    setAsesorElegido('');
+      setProyectos((prev) =>
+        prev.map((p) =>
+          p.id === proyectoAsignar.id
+            ? { ...p, asesor: nombreDocente, asesorId: Number(docenteElegidoId) }
+            : p
+        )
+      );
+      mostrarToast(`Asesor ${nombreDocente} guardado en MariaDB para ${proyectoAsignar.estudiante}`);
+      setProyectoAsignar(null);
+      setDocenteElegidoId('');
+    } catch (error) {
+      console.error('Error al asignar asesor:', error);
+      mostrarToast('Error al guardar el asesor en la base de datos');
+    }
   };
 
   const handleExportarCSV = () => {
     const encabezados = [
       'ID',
       'Estudiante',
-      'Carrera',
+      'Codigo',
       'Proyecto',
       'Asesor',
       'Fase',
@@ -174,7 +126,7 @@ export default function DashboardCoordinacion() {
     const filas = proyectos.map((p) => [
       p.id,
       `"${p.estudiante}"`,
-      `"${p.carrera}"`,
+      `"${p.codigoEstudiante}"`,
       `"${p.titulo}"`,
       `"${p.asesor}"`,
       `"${p.fase}"`,
@@ -197,18 +149,11 @@ export default function DashboardCoordinacion() {
 
   const handleDescargarActaQR = async (estudiante) => {
     try {
-      const response = await API.get(`/coordinacion/proyectos/${estudiante.id}/acta-qr`, {
-        responseType: 'blob',
-      });
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `Acta_QR_${estudiante.id}.pdf`);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
+      const response = await API.get(`/coordinacion/proyectos/${estudiante.id}/acta-qr`);
+      const folio = response.data?.folio || `ACTA-2026-00${estudiante.id}`;
+      mostrarToast(`Acta Digital QR verificada (${folio}) para ${estudiante.estudiante}`);
     } catch (error) {
-      mostrarToast(`Acta Digital QR generada para ${estudiante.estudiante}`);
+      mostrarToast(`No se pudo verificar el Acta QR para ${estudiante.estudiante}`);
     }
   };
 
@@ -221,7 +166,7 @@ export default function DashboardCoordinacion() {
     navigate('/login');
   };
 
-  // Métricas dinámicas
+  // Métricas dinámicas calculadas desde MariaDB
   const totalProyectos = proyectos.length || 1;
   const totalSinAsesor = proyectos.filter((p) => p.asesor === 'Sin Asignar').length;
   const totalAlertas = proyectos.filter((p) => p.estadoSemaforo === 'Rojo').length;
@@ -248,7 +193,7 @@ export default function DashboardCoordinacion() {
         p.estudiante?.toLowerCase().includes(q) ||
         p.titulo?.toLowerCase().includes(q) ||
         p.asesor?.toLowerCase().includes(q) ||
-        p.carrera?.toLowerCase().includes(q)
+        p.codigoEstudiante?.toLowerCase().includes(q)
       );
     }
 
@@ -257,7 +202,6 @@ export default function DashboardCoordinacion() {
 
   return (
     <div className="coord-layout">
-      {/* BARRA LATERAL EXCLUSIVA DE COORDINACIÓN (SIN MENÚ DE ESTUDIANTE NI NÚMERO DE EMPLEADO) */}
       <aside className="coord-sidebar">
         <div className="coord-brand">
           <div className="brand-logo-box">TT</div>
@@ -328,7 +272,6 @@ export default function DashboardCoordinacion() {
         </div>
       </aside>
 
-      {/* CONTENIDO PRINCIPAL */}
       <main className="coord-main">
         {notificacion && (
           <div className="coord-toast">
@@ -351,7 +294,6 @@ export default function DashboardCoordinacion() {
           </div>
         </header>
 
-        {/* Tarjetas KPI (Interactivas al hacer clic) */}
         <section className="kpi-grid">
           <div
             className="card-surface kpi-card kpi-indigo clickable-card"
@@ -402,7 +344,6 @@ export default function DashboardCoordinacion() {
           </div>
         </section>
 
-        {/* Barra de distribución visual de estados */}
         <section className="card-surface distribution-card">
           <div className="distribution-header">
             <span className="distribution-title">Distribución Global de Estatus</span>
@@ -425,7 +366,6 @@ export default function DashboardCoordinacion() {
           </div>
         </section>
 
-        {/* Banner de Alerta */}
         {totalAlertas > 0 && (
           <section className="card-surface alert-box-warning">
             <div className="alert-header">
@@ -442,7 +382,6 @@ export default function DashboardCoordinacion() {
           </section>
         )}
 
-        {/* Tabla de Monitoreo */}
         <section className="card-surface table-section">
           <div className="table-header-toolbar">
             <div>
@@ -458,7 +397,7 @@ export default function DashboardCoordinacion() {
               <input
                 type="text"
                 className="search-input"
-                placeholder="Buscar alumno, tesis o asesor..."
+                placeholder="Buscar alumno, código, tesis o asesor..."
                 value={busqueda}
                 onChange={(e) => setBusqueda(e.target.value)}
               />
@@ -480,7 +419,9 @@ export default function DashboardCoordinacion() {
           </div>
 
           {loading ? (
-            <div className="empty-state">Cargando proyectos desde la base de datos...</div>
+            <div className="empty-state">Cargando proyectos reales desde MariaDB...</div>
+          ) : errorCarga ? (
+            <div className="empty-state">{errorCarga}</div>
           ) : proyectosFiltrados.length === 0 ? (
             <div className="empty-state">
               No se encontraron proyectos con los filtros seleccionados.
@@ -491,7 +432,7 @@ export default function DashboardCoordinacion() {
                 <thead>
                   <tr>
                     <th>Estudiante</th>
-                    <th>Proyecto / Carrera</th>
+                    <th>Proyecto / Fase</th>
                     <th>Asesor Asignado</th>
                     <th>Semáforo</th>
                     <th>Estatus</th>
@@ -508,7 +449,7 @@ export default function DashboardCoordinacion() {
                           </div>
                           <div>
                             <div className="student-name">{item.estudiante}</div>
-                            <div className="student-code">{item.carrera}</div>
+                            <div className="student-code">Código: {item.codigoEstudiante}</div>
                           </div>
                         </div>
                       </td>
@@ -522,7 +463,7 @@ export default function DashboardCoordinacion() {
                             className="btn-assign-warning"
                             onClick={() => {
                               setProyectoAsignar(item);
-                              setAsesorElegido(ASESORES_DISPONIBLES[0]);
+                              setDocenteElegidoId(docentes[0]?.id || '');
                             }}
                           >
                             + Asignar Asesor
@@ -535,7 +476,7 @@ export default function DashboardCoordinacion() {
                               title="Reasignar asesor"
                               onClick={() => {
                                 setProyectoAsignar(item);
-                                setAsesorElegido(item.asesor);
+                                setDocenteElegidoId(item.asesorId || docentes[0]?.id || '');
                               }}
                             >
                               ✏️
@@ -585,7 +526,6 @@ export default function DashboardCoordinacion() {
           )}
         </section>
 
-        {/* MODAL: ASIGNAR / REASIGNAR ASESOR */}
         {proyectoAsignar && (
           <div className="modal-backdrop" onClick={() => setProyectoAsignar(null)}>
             <div className="modal-card" onClick={(e) => e.stopPropagation()}>
@@ -596,15 +536,15 @@ export default function DashboardCoordinacion() {
               <p className="modal-project-name">"{proyectoAsignar.titulo}"</p>
 
               <form onSubmit={confirmarAsignacionAsesor}>
-                <label className="modal-label">Selecciona un docente disponible:</label>
+                <label className="modal-label">Selecciona un docente registrado:</label>
                 <select
                   className="modal-select"
-                  value={asesorElegido}
-                  onChange={(e) => setAsesorElegido(e.target.value)}
+                  value={docenteElegidoId}
+                  onChange={(e) => setDocenteElegidoId(e.target.value)}
                 >
-                  {ASESORES_DISPONIBLES.map((docente) => (
-                    <option key={docente} value={docente}>
-                      {docente}
+                  {docentes.map((docente) => (
+                    <option key={docente.id} value={docente.id}>
+                      {docente.nombreCompleto}
                     </option>
                   ))}
                 </select>
@@ -626,7 +566,6 @@ export default function DashboardCoordinacion() {
           </div>
         )}
 
-        {/* MODAL: VER DETALLE DEL PROYECTO */}
         {proyectoDetalle && (
           <div className="modal-backdrop" onClick={() => setProyectoDetalle(null)}>
             <div className="modal-card" onClick={(e) => e.stopPropagation()}>
@@ -647,8 +586,8 @@ export default function DashboardCoordinacion() {
                   <span className="detail-value">{proyectoDetalle.estudiante}</span>
                 </div>
                 <div className="detail-item">
-                  <span className="detail-label">Programa Académico</span>
-                  <span className="detail-value">{proyectoDetalle.carrera}</span>
+                  <span className="detail-label">Código UDG</span>
+                  <span className="detail-value">{proyectoDetalle.codigoEstudiante}</span>
                 </div>
                 <div className="detail-item full-width">
                   <span className="detail-label">Título de Tesis</span>
@@ -667,12 +606,12 @@ export default function DashboardCoordinacion() {
               <div className="progress-section">
                 <div className="progress-header">
                   <span>Avance Global Registrado</span>
-                  <strong>{proyectoDetalle.progreso || 45}%</strong>
+                  <strong>{proyectoDetalle.progreso}%</strong>
                 </div>
                 <div className="progress-bar-bg">
                   <div
                     className="progress-bar-fill"
-                    style={{ width: `${proyectoDetalle.progreso || 45}%` }}
+                    style={{ width: `${proyectoDetalle.progreso}%` }}
                   />
                 </div>
               </div>
