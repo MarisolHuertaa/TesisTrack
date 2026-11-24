@@ -1,0 +1,27 @@
+app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
+
+module.exports = app;
+
+app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
+
+app.use((err, req, res, next) => {
+    console.error(err);
+
+    if (res.headersSent) {
+        return next(err);
+    }
+
+    const status = err.status || err.statusCode || 500;
+
+    res.status(status).json({
+        error: status >= 500
+            ? 'Error interno del servidor'
+            : err.message
+    });
+});
+
+module.exports = app;
+
+app.get('/api/test-error', (req, res, next) => {
+    next(new Error('Error de prueba'));
+});
