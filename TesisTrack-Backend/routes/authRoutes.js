@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const authController = require('../controllers/authController');
 const { verifyToken } = require('../middlewares/authMiddleware');
+const perfilController = require('../controllers/perfilController');
 
 // Rutas Públicas (Autenticación)
 router.post('/register', authController.registrar); // Ruta: POST /api/auth/register
@@ -14,5 +15,8 @@ router.get('/profile', verifyToken, (req, res) => {
     user: req.user
   });
 });
+
+router.get('/perfil', verifyToken, perfilController.obtenerPerfil);
+router.put('/perfil', verifyToken, perfilController.actualizarPerfil);
 
 module.exports = router;

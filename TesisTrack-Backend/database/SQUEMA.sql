@@ -195,4 +195,39 @@ CREATE TABLE actas (
     CONSTRAINT fk_actas_id FOREIGN KEY (proyecto_id) REFERENCES proyectos(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
+-- ------------------------------------------------------------
+-- 13. TABLA DE EVALUACIONES POR RÚBRICA
+-- ------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS evaluaciones_rubrica (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    proyecto_id INT NOT NULL,
+    docente_id INT NOT NULL,
+    metodologia INT NOT NULL DEFAULT 5,
+    dominio INT NOT NULL DEFAULT 5,
+    aportes INT NOT NULL DEFAULT 5,
+    promedio DECIMAL(4,2) NOT NULL DEFAULT 5.00,
+    actualizado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY uq_proyecto_docente_rubrica (proyecto_id, docente_id),
+    CONSTRAINT fk_rubrica_proyecto FOREIGN KEY (proyecto_id) REFERENCES proyectos(id) ON DELETE CASCADE,
+    CONSTRAINT fk_rubrica_docente FOREIGN KEY (docente_id) REFERENCES usuarios(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+-- ------------------------------------------------------------
+-- AGREGAR NUEVAS COLUMNAS A LA TABLA DE USUARIOS
+-- ------------------------------------------------------------
+ALTER TABLE usuarios
+  ADD COLUMN departamento VARCHAR(150) DEFAULT 'Ingeniería en Sistemas e Informática',
+  ADD COLUMN grado_academico VARCHAR(150) DEFAULT 'Maestro en Ciencias Computacionales',
+  ADD COLUMN especialidad VARCHAR(150) DEFAULT 'Ingeniería de Software y Bases de Datos',
+  ADD COLUMN cedula VARCHAR(50) DEFAULT '8492014';
+
+  -- Correción en alumnos
+ UPDATE usuarios u
+JOIN roles r ON u.rol_id = r.id
+SET u.departamento = NULL,
+    u.grado_academico = NULL,
+    u.especialidad = NULL,
+    u.cedula = NULL
+WHERE r.nombre <> 'DOCENTE';
+
 SET FOREIGN_KEY_CHECKS = 1;
