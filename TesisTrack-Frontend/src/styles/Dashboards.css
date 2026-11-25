@@ -834,5 +834,163 @@ body, html, #root {
   display: inline-block;
   border: none;
   line-height: 1.2;
- 
+}
+
+/* ==========================================
+   ESTILOS ADICIONALES PANEL ASESOR (DEL MERGE)
+   ========================================== */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.kpi-card {
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+  gap: 16px;
+  padding: 24px;
+}
+
+.kpi-number {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: #0F172A;
+  line-height: 1;
+}
+
+.kpi-label {
+  color: #64748B;
+  margin-top: 0;
+  font-size: 1rem;
+}
+
+.agenda-slots {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+
+.slot-btn {
+  background: #F8FAFC;
+  border: 1.5px solid #E2E8F0;
+  color: #0F172A;
+  font-weight: 700;
+  border-radius: 12px;
+  padding: 10px 16px;
+  cursor: pointer;
+}
+
+.slot-btn.active {
+  background: #EEF2FF;
+  border-color: #4F46E5;
+}
+
+/* ==========================================
+   MODAL VISOR DE DICTAMEN (DEL MERGE)
+   ========================================== */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(15, 23, 42, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-card {
+  background: #FFFFFF;
+  padding: 32px;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 600px;
+  border: 1px solid #E2E8F0;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.close-btn {
+  background: transparent;
+  border: none;
+  font-size: 1.2rem;
+  color: #64748B;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.close-btn:hover {
+  background: #F1F5F9;
+  color: #0F172A;
+}
+
+.custom-textarea {
+  width: 100%;
+  border: 1px solid #CBD5E1;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 0.88rem;
+  color: #334155;
+  box-sizing: border-box;
+  margin-top: 8px;
+  margin-bottom: 16px;
+  resize: vertical;
+}
+
+.custom-textarea:focus {
+  outline: none;
+  border-color: #312E81;
+  box-shadow: 0 0 0 3px rgba(49, 46, 129, 0.1);
+}
+
+.decision-buttons {
+  display: flex;
+  gap: 12px;
+}
+
+.btn-decision {
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  border: none;
+  cursor: pointer;
+  flex: 1;
+}
+
+.btn-decision.approve {
+  background-color: #D1FAE5;
+  color: #065F46;
+}
+
+.btn-decision.observe {
+  background-color: #FEF3C7;
+  color: #92400E;
+  border: 1px solid #FDE68A;
+}
+
+.btn-decision.reject {
+  background-color: #FEE2E2;
+  color: #991B1B;
+  border: 1px solid #FCA5A5;
+}
+
+/* ==========================================
+   AJUSTE DE ANCHO EN BARRA SUPERIOR (NAVBAR)
+   ========================================== */
+.navbar-container {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
 }
