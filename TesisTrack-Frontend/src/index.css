@@ -32,13 +32,13 @@ body {
 /* Layout centrado para autenticación */
 .auth-container {
   width: 100%;
-  max-width: 440px;
+  max-width: 420px;
   padding: 2.5rem;
   background: var(--bg-card);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
   border: 1px solid var(--border-color);
-  margin: 20px;
+  margin: 60px auto;
 }
 
 .auth-header {

@@ -48,6 +48,12 @@ export const Dashboard = () => {
       case 'docente':
       case 'revisor':
         return <TeacherDashboard user={user} activeTab={activeTab} setActiveTab={setActiveTab} />;
+
+      case 'admin':
+      case 'coordinador':
+        return <AdminDashboard user={user} activeTab={activeTab} />;
+
+
       case 'estudiante':
       default:
         return <StudentDashboard user={user} activeTab={activeTab} setActiveTab={setActiveTab} />;
