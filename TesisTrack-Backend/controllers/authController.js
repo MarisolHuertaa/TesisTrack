@@ -1,29 +1,31 @@
-const db = require('../db');
+const db = require('../config/db'); 
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const { JWT_SECRET, JWT_EXPIRES_IN } = require('../config/jwt');
+const { esCorreoInstitucional } = require('../utils/validaciones');
 
 // 1. REGISTRO DE USUARIO
-
 exports.registrar = async (req, res) => {
     const { nombre, apellido, correo, password, rol_id } = req.body;
 
-    // Validación básica de campos requeridos
     if (!nombre || !apellido || !correo || !password || !rol_id) {
         return res.status(400).json({ mensaje: 'Todos los campos son obligatorios' });
     }
 
+    if (!esCorreoInstitucional(correo)) {
+        return res.status(400).json({ mensaje: 'Debes usar tu correo institucional (@...udg.mx)' });
+    }
+
     try {
-        // Verificar si el correo ya existe
         const [usuarioExistente] = await db.query('SELECT id FROM usuarios WHERE correo = ?', [correo]);
         if (usuarioExistente.length > 0) {
             return res.status(400).json({ mensaje: 'El correo electrónico ya está registrado' });
         }
 
-        // Encriptar la contraseña (hash)
         const salt = await bcrypt.genSalt(10);
         const password_hash = await bcrypt.hash(password, salt);
 
-        // Insertar el nuevo usuario
+        // La columna en SQUEMA.sql se llama password_hash (antes se insertaba en 'password' y fallaba)
         const sql = 'INSERT INTO usuarios (nombre, apellido, correo, password_hash, rol_id) VALUES (?, ?, ?, ?, ?)';
         const [resultado] = await db.query(sql, [nombre, apellido, correo, password_hash, rol_id]);
 
@@ -38,7 +40,6 @@ exports.registrar = async (req, res) => {
 };
 
 // 2. LOGIN DE USUARIO
-
 exports.login = async (req, res) => {
     const { correo, password } = req.body;
 
@@ -47,7 +48,7 @@ exports.login = async (req, res) => {
     }
 
     try {
-        // Buscar el usuario y traer el nombre de su rol
+        // Seleccionar password_hash de la tabla usuarios
         const sql = `
             SELECT u.id, u.nombre, u.apellido, u.correo, u.password_hash, u.rol_id, r.nombre AS rol_nombre 
             FROM usuarios u
@@ -62,13 +63,13 @@ exports.login = async (req, res) => {
 
         const usuario = usuarios[0];
 
-        // Comparar la contraseña con el hash guardado
+        // Comparar la contraseña ingresada contra usuario.password_hash
         const passwordCorrecto = await bcrypt.compare(password, usuario.password_hash);
         if (!passwordCorrecto) {
             return res.status(401).json({ mensaje: 'Credenciales inválidas (contraseña incorrecta)' });
         }
 
-        // Generar Token JWT con la información relevante
+        // Generar Token JWT
         const token = jwt.sign(
             { 
                 id: usuario.id, 
@@ -76,8 +77,8 @@ exports.login = async (req, res) => {
                 rol_id: usuario.rol_id,
                 rol: usuario.rol_nombre 
             },
-            process.env.JWT_SECRET || 'clave_secreta_default',
-            { expiresIn: '8h' } // Duración del token
+            JWT_SECRET,
+            { expiresIn: JWT_EXPIRES_IN }
         );
 
         res.json({
