@@ -98,3 +98,29 @@ exports.listarPendientes = async (req, res) => {
     res.status(500).json({ mensaje: 'Error al consultar las entregas pendientes' });
   }
 };
+
+// Control de Lectura: todas las entregas (pendientes y revisadas) de los alumnos del docente
+exports.listarEntregasDocente = async (req, res) => {
+  try {
+    const [entregas] = await db.query(
+      `SELECT e.id, e.codigo, e.numero_version, e.nombre_original, e.archivo_url, e.tamano,
+              e.estado, e.fecha_entrega, p.id AS proyecto_id, p.titulo AS proyecto_titulo,
+              u.nombre AS estudiante_nombre, u.apellido AS estudiante_apellido,
+              pd.tipo_rol, h.nombre AS hito_nombre,
+              (SELECT d.comentario FROM dictamenes d WHERE d.entrega_id = e.id ORDER BY d.fecha_dictamen DESC LIMIT 1) AS ultimo_comentario,
+              (SELECT d.dictamen FROM dictamenes d WHERE d.entrega_id = e.id ORDER BY d.fecha_dictamen DESC LIMIT 1) AS ultimo_dictamen
+       FROM entregas e
+       JOIN proyectos p ON e.proyecto_id = p.id
+       JOIN proyecto_docentes pd ON pd.proyecto_id = p.id
+       JOIN usuarios u ON p.estudiante_id = u.id
+       LEFT JOIN hitos h ON e.hito_id = h.id
+       WHERE pd.docente_id = ?
+       ORDER BY (e.estado = 'EN_REVISION') DESC, e.fecha_entrega DESC, e.id DESC`,
+      [req.user.id]
+    );
+    res.json({ entregas });
+  } catch (error) {
+    console.error('Error al listar entregas del docente:', error);
+    res.status(500).json({ mensaje: 'Error al consultar las entregas de tus alumnos' });
+  }
+};

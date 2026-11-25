@@ -11,6 +11,8 @@ export const Navbar = ({ activeTab, setActiveTab, notificaciones = [] }) => {
     rol: 'Estudiante',
   };
 
+  const isDocente = user.rol?.toUpperCase() === 'DOCENTE' || user.rol?.toUpperCase() === 'ASESOR';
+
   // Detectamos si el usuario es Coordinador (por rol_id o por texto del rol)
   const isCoordinador =
     Number(user.rol_id) === 3 ||
@@ -39,19 +41,23 @@ export const Navbar = ({ activeTab, setActiveTab, notificaciones = [] }) => {
     <>
       <nav className="navbar-container">
         {/* Brand: TesisTrack */}
-        <div className="navbar-brand-group">
+        <div
+          className="navbar-brand-group"
+          style={{ cursor: 'pointer' }}
+          onClick={() => handleSelectTab('inicio')}
+        >
           <h2 className="navbar-title">TesisTrack</h2>
           <span className="navbar-subtitle">Sistema de Gestión de Titulación</span>
         </div>
 
-        {/* Sección Derecha: Campanita de Notificaciones + Botón de Perfil */}
         <div className="navbar-right">
+          {/* Campanita de Notificaciones */}
           <NotificationsDropdown
             notificaciones={notificaciones}
             onNavigateTab={(tab) => setActiveTab && setActiveTab(tab)}
           />
 
-          {/* Botón de Perfil / Drawer Trigger */}
+          {/* Menú desplegable en el nombre del usuario */}
           <button className="user-menu-trigger" onClick={() => setDrawerOpen(true)}>
             <div className="avatar-circle">{getInitials(user.nombre)}</div>
             <span className="user-name">{user.nombre}</span>
@@ -81,7 +87,53 @@ export const Navbar = ({ activeTab, setActiveTab, notificaciones = [] }) => {
         </div>
 
         <div className="drawer-menu-items">
-          {isCoordinador ? (
+          {isDocente ? (
+            /* MENÚ DE DOCENTE / ASESOR */
+            <>
+              <button
+                className={`drawer-item ${activeTab === 'inicio' ? 'active' : ''}`}
+                onClick={() => handleSelectTab('inicio')}
+              >
+                <span>🏠</span> <strong>Panel Principal</strong>
+              </button>
+              <button
+                className={`drawer-item ${activeTab === 'agenda' ? 'active' : ''}`}
+                onClick={() => handleSelectTab('agenda')}
+              >
+                <span>📅</span> <strong>Agenda de Defensas</strong>
+              </button>
+              <button
+                className={`drawer-item ${activeTab === 'lecturas' ? 'active' : ''}`}
+                onClick={() => handleSelectTab('lecturas')}
+              >
+                <span>📖</span> <strong>Control de Lectura</strong>
+              </button>
+              <button
+                className={`drawer-item ${activeTab === 'directorio' ? 'active' : ''}`}
+                onClick={() => handleSelectTab('directorio')}
+              >
+                <span>👥</span> <strong>Directorio de Asesorados</strong>
+              </button>
+              <button
+                className={`drawer-item ${activeTab === 'rubricas' ? 'active' : ''}`}
+                onClick={() => handleSelectTab('rubricas')}
+              >
+                <span>📋</span> <strong>Rúbricas de Evaluación</strong>
+              </button>
+              <button
+                className={`drawer-item ${activeTab === 'historial' ? 'active' : ''}`}
+                onClick={() => handleSelectTab('historial')}
+              >
+                <span>📝</span> <strong>Historial de Retroalimentación</strong>
+              </button>
+              <button
+                className={`drawer-item ${activeTab === 'perfil' ? 'active' : ''}`}
+                onClick={() => handleSelectTab('perfil')}
+              >
+                <span>👤</span> <strong>Mi Perfil</strong>
+              </button>
+            </>
+          ) : isCoordinador ? (
             /* MENÚ EXCLUSIVO DE COORDINACIÓN */
             <>
               <button

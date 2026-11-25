@@ -100,3 +100,29 @@ exports.emitirDictamen = async (req, res) => {
     res.status(500).json({ mensaje: 'Error en el servidor al registrar el dictamen' });
   }
 };
+
+// Historial de Retroalimentación: dictámenes y comentarios emitidos en los proyectos del docente
+exports.listarHistorialDictamenes = async (req, res) => {
+  try {
+    const [historial] = await db.query(
+      `SELECT DISTINCT d.id, d.entrega_id, d.dictamen, d.comentario, d.fecha_dictamen,
+              e.codigo, e.numero_version, e.nombre_original,
+              p.id AS proyecto_id, p.titulo AS proyecto_titulo,
+              u.nombre AS estudiante_nombre, u.apellido AS estudiante_apellido,
+              doc.nombre AS docente_nombre, doc.apellido AS docente_apellido
+       FROM dictamenes d
+       JOIN entregas e ON d.entrega_id = e.id
+       JOIN proyectos p ON e.proyecto_id = p.id
+       JOIN proyecto_docentes pd ON pd.proyecto_id = p.id
+       JOIN usuarios u ON p.estudiante_id = u.id
+       JOIN usuarios doc ON d.docente_id = doc.id
+       WHERE pd.docente_id = ? OR d.docente_id = ?
+       ORDER BY d.fecha_dictamen DESC, d.id DESC`,
+      [req.user.id, req.user.id]
+    );
+    res.json({ historial });
+  } catch (error) {
+    console.error('Error al consultar historial de dictámenes:', error);
+    res.status(500).json({ mensaje: 'Error al consultar el historial de retroalimentación' });
+  }
+};
