@@ -28,19 +28,19 @@ export const NotificationsDropdown = ({ notificaciones = [], unreadCount: unread
         icono = '📄';
         titulo = 'Actualización de Entrega';
         actionText = 'Ver Entregas →';
-        targetTab = 'entregas';
+        targetTab = 'lecturas';
       } else if (tipoUpper === 'DICTAMEN') {
         tipo = 'success';
         icono = '📋';
         titulo = 'Dictamen Registrado';
         actionText = 'Ver Historial →';
-        targetTab = 'entregas';
+        targetTab = 'historial';
       } else if (tipoUpper === 'EXAMEN') {
         tipo = 'success';
         icono = '🎓';
         titulo = 'Examen de Grado';
         actionText = 'Ver Calendario →';
-        targetTab = 'examen';
+        targetTab = 'agenda';
       } else if (tipoUpper === 'GENERAL') {
         tipo = 'info';
         icono = '💡';
@@ -118,18 +118,69 @@ export const NotificationsDropdown = ({ notificaciones = [], unreadCount: unread
     : filteredNotifications.slice(0, 3);
 
   // Marcar todas como leídas
-  const handleMarkAllRead = () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, leida: true })));
-  };
+const handleMarkAllRead = async () => {
+  try {
+    const token = localStorage.getItem('token');
 
-  // Acción al hacer clic en una notificación
-  const handleActionClick = (targetTab, id) => {
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, leida: true } : n))
+    const respuesta = await fetch(
+      'http://localhost:5000/api/proyectos/notificaciones/leidas',
+      {
+        method: 'PATCH',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      }
     );
+
+    if (!respuesta.ok) {
+      throw new Error('No se pudieron marcar las notificaciones como leídas');
+    }
+
+    setNotifications((prev) =>
+      prev.map((n) => ({ ...n, leida: true }))
+    );
+
+  } catch (error) {
+    console.error('Error al marcar todas como leídas:', error);
+    alert('No se pudieron actualizar las notificaciones. Intenta nuevamente.');
+  }
+};
+
+// Acción al hacer clic en una notificación
+const handleActionClick = async (targetTab, id) => {
+  try {
+    const token = localStorage.getItem('token');
+
+    const respuesta = await fetch(
+      `http://localhost:5000/api/proyectos/notificaciones/${id}/leida`,
+      {
+        method: 'PATCH',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+
+    if (!respuesta.ok) {
+      throw new Error('No se pudo guardar la notificación como leída');
+    }
+
+    setNotifications((prev) =>
+      prev.map((n) =>
+        String(n.id) === String(id) ? { ...n, leida: true } : n
+      )
+    );
+
     if (onNavigateTab) onNavigateTab(targetTab);
     setIsOpen(false);
-  };
+
+  } catch (error) {
+    console.error('Error al marcar notificación como leída:', error);
+    alert('No se pudo actualizar la notificación. Intenta nuevamente.');
+  }
+};
 
   // Cerrar al hacer clic fuera del desplegable
   useEffect(() => {
