@@ -124,3 +124,51 @@ exports.obtenerMiProyecto = async (req, res) => {
         res.status(500).json({ mensaje: 'Error al consultar datos en el servidor' });
     }
 };
+// Marcar una notificación como leída
+// Marcar una notificación como leída
+exports.marcarNotificacionLeida = async (req, res) => {
+    try {
+        const usuarioId = req.user.id;
+        const notificacionId = req.params.id;
+
+        const [resultado] = await db.query(
+            'UPDATE notificaciones SET leido = 1 WHERE id = ? AND usuario_id = ?',
+            [notificacionId, usuarioId]
+        );
+
+        if (resultado.affectedRows === 0) {
+            return res.status(404).json({
+                mensaje: 'Notificación no encontrada'
+            });
+        }
+
+        res.json({ mensaje: 'Notificación marcada como leída' });
+
+    } catch (error) {
+        console.error('Error al marcar notificación:', error);
+        res.status(500).json({
+            mensaje: 'Error al actualizar la notificación'
+        });
+    }
+};
+// Marcar todas las notificaciones del usuario como leídas
+exports.marcarTodasLeidas = async (req, res) => {
+    try {
+        const usuarioId = req.user.id;
+
+        await db.query(
+            'UPDATE notificaciones SET leido = 1 WHERE usuario_id = ? AND leido = 0',
+            [usuarioId]
+        );
+
+        res.json({
+            mensaje: 'Todas las notificaciones fueron marcadas como leídas'
+        });
+
+    } catch (error) {
+        console.error('Error al marcar todas las notificaciones:', error);
+        res.status(500).json({
+            mensaje: 'Error al actualizar las notificaciones'
+        });
+    }
+};

@@ -7,6 +7,8 @@ const { ROLES } = require('../utils/validaciones');
 const rubricaController = require('../controllers/rubricaController');
 
 router.get('/mi-proyecto', verifyToken, proyectoController.obtenerMiProyecto);
+router.patch('/notificaciones/:id/leida', verifyToken, proyectoController.marcarNotificacionLeida);
+router.patch('/notificaciones/leidas', verifyToken, proyectoController.marcarTodasLeidas);
 
 // Agendado de examen (estudiante)
 router.get('/horarios-disponibles', verifyToken, requireRol(ROLES.ESTUDIANTE), examenController.horariosDisponibles);

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { jsPDF } from 'jspdf';
 import API from '../../services/api';
 import '../../styles/Dashboards.css';
 
@@ -14,6 +15,253 @@ const FRANJAS_BASE = [
   { inicio: '14:00', fin: '16:00' },
   { inicio: '16:00', fin: '18:00' }
 ];
+
+const FORMATOS_INSTITUCIONALES = [
+  {
+    icon: '📋',
+    bg: '#EEF2FF',
+    color: '#3730A3',
+    titulo: 'Rúbrica de Defensa Oral',
+    desc: 'Evaluación de dominio del tema y presentación',
+    archivo: 'rubrica-defensa-oral.pdf',
+    criterios: [
+      'Dominio y conocimiento del tema',
+      'Claridad y calidad de la presentación',
+      'Respuesta a preguntas del jurado'
+    ]
+  },
+  {
+    icon: '📑',
+    bg: '#FEF3C7',
+    color: '#92400E',
+    titulo: 'Dictamen de Escrito Final',
+    desc: 'Criterios metodológicos y redacción técnica',
+    archivo: 'dictamen-escrito-final.pdf',
+    criterios: [
+      'Estructura y metodología de investigación',
+      'Redacción, ortografía y coherencia',
+      'Cumplimiento de objetivos y conclusiones'
+    ]
+  },
+  {
+    icon: '💡',
+    bg: '#D1FAE5',
+    color: '#065F46',
+    titulo: 'Criterios de Innovación',
+    desc: 'Evaluación de aporte tecnológico e impacto',
+    archivo: 'criterios-innovacion.pdf',
+    criterios: [
+      'Originalidad y aporte tecnológico',
+      'Viabilidad de la propuesta',
+      'Impacto y utilidad de la solución'
+    ]
+  }
+];
+
+const descargarFormatoInstitucional = (formato) => {
+  try {
+    const pdf = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'a4'
+    });
+
+    const ancho = pdf.internal.pageSize.getWidth();
+    const alto = pdf.internal.pageSize.getHeight();
+    const margen = 18;
+    const anchoContenido = ancho - margen * 2;
+    let y = 20;
+
+    pdf.setProperties({
+      title: formato.titulo,
+      subject: 'Plantilla de evaluación académica TesisTrack'
+    });
+
+    // Encabezado
+    pdf.setFillColor(23, 21, 59);
+    pdf.rect(0, 0, ancho, 35, 'F');
+
+    pdf.setTextColor(255, 255, 255);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(20);
+    pdf.text('TesisTrack', margen, 15);
+
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(9);
+    pdf.text('FORMATO DE EVALUACIÓN ACADÉMICA', margen, 24);
+
+    // Título
+    y = 48;
+    pdf.setTextColor(23, 21, 59);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(15);
+
+    const tituloLineas = pdf.splitTextToSize(
+      formato.titulo,
+      anchoContenido
+    );
+
+    pdf.text(tituloLineas, margen, y);
+    y += tituloLineas.length * 7 + 5;
+
+    // Descripción
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(9);
+    pdf.setTextColor(80, 80, 80);
+
+    const descripcion = pdf.splitTextToSize(
+      formato.desc,
+      anchoContenido
+    );
+
+    pdf.text(descripcion, margen, y);
+    y += descripcion.length * 5 + 10;
+
+    // Datos del estudiante
+    const campos = [
+      'Nombre del estudiante:',
+      'Título del proyecto:',
+      'Docente / Sinodal:',
+      'Fecha de evaluación:'
+    ];
+
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(9);
+    pdf.setTextColor(30, 30, 30);
+
+    campos.forEach((campo) => {
+      pdf.text(campo, margen, y);
+      pdf.setDrawColor(160, 160, 160);
+      pdf.line(margen + 48, y + 1, ancho - margen, y + 1);
+      y += 11;
+    });
+
+    // Encabezado de la tabla
+    y += 7;
+
+    pdf.setFillColor(23, 21, 59);
+    pdf.rect(margen, y - 6, anchoContenido, 11, 'F');
+
+    pdf.setTextColor(255, 255, 255);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(9);
+
+    pdf.text('CRITERIO DE EVALUACIÓN', margen + 3, y + 1);
+    pdf.text('CALIFICACIÓN', ancho - margen - 37, y + 1);
+
+    y += 13;
+
+    // Criterios
+    formato.criterios.forEach((criterio, index) => {
+      if (y > 245) {
+        pdf.addPage();
+        y = 25;
+      }
+
+      pdf.setTextColor(30, 30, 30);
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(9);
+
+      const lineas = pdf.splitTextToSize(criterio, 110);
+
+      pdf.text(`${index + 1}.`, margen + 2, y);
+      pdf.text(lineas, margen + 10, y);
+
+      pdf.setDrawColor(150, 150, 150);
+      pdf.rect(ancho - margen - 32, y - 5, 28, 10);
+
+      y += Math.max(13, lineas.length * 5 + 5);
+    });
+
+    // Calificación final
+    y += 5;
+
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(10);
+    pdf.setTextColor(23, 21, 59);
+
+    pdf.text('Calificación final:', margen, y);
+    pdf.setDrawColor(100, 100, 100);
+    pdf.rect(margen + 38, y - 6, 35, 10);
+    pdf.text('/ 10', margen + 76, y);
+
+    // Observaciones
+    y += 20;
+
+    if (y > 225) {
+      pdf.addPage();
+      y = 25;
+    }
+
+    pdf.setFontSize(11);
+    pdf.text('OBSERVACIONES Y COMENTARIOS', margen, y);
+
+    y += 10;
+
+    pdf.setDrawColor(170, 170, 170);
+
+    for (let i = 0; i < 5; i++) {
+      pdf.line(margen, y, ancho - margen, y);
+      y += 9;
+    }
+
+    // Resultado
+    y += 7;
+
+    if (y > 245) {
+      pdf.addPage();
+      y = 25;
+    }
+
+    pdf.setFontSize(10);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('Resultado de la evaluación:', margen, y);
+
+    y += 10;
+
+    pdf.setFont('helvetica', 'normal');
+    pdf.text('[  ] Aprobado', margen, y);
+    pdf.text('[  ] Aprobado con observaciones', margen + 48, y);
+
+    y += 9;
+    pdf.text('[  ] No aprobado', margen, y);
+
+    // Firmas
+    y += 25;
+
+    if (y > alto - 30) {
+      pdf.addPage();
+      y = 35;
+    }
+
+    pdf.setDrawColor(80, 80, 80);
+    pdf.line(margen, y, margen + 65, y);
+    pdf.line(ancho - margen - 65, y, ancho - margen, y);
+
+    pdf.setFontSize(8);
+    pdf.setTextColor(80, 80, 80);
+
+    pdf.text('Firma del docente / sinodal', margen, y + 6);
+    pdf.text('Firma del estudiante', ancho - margen - 65, y + 6);
+
+    // Pie de página
+    pdf.setFontSize(8);
+    pdf.setTextColor(130, 130, 130);
+
+    pdf.text(
+      'TesisTrack - Plantilla de apoyo académico. No sustituye formatos oficiales.',
+      margen,
+      alto - 10
+    );
+
+    // Descargar archivo
+    pdf.save(formato.archivo);
+
+  } catch (error) {
+    console.error('Error al generar PDF:', error);
+    alert('No se pudo generar el PDF. Intenta nuevamente.');
+  }
+};
 
 export const TeacherDashboard = ({ user, activeTab = 'inicio', setActiveTab }) => {
   // Estados con datos reales
@@ -1039,11 +1287,7 @@ export const TeacherDashboard = ({ user, activeTab = 'inicio', setActiveTab }) =
             <div style={{ backgroundColor: '#FFFFFF', borderRadius: '24px', padding: '36px', boxShadow: '0px 10px 40px -10px rgba(0, 0, 0, 0.04)' }}>
               <h2 style={{ margin: '0 0 20px 0', color: '#0F172A', fontSize: '1.15rem', fontWeight: '800' }}>Formatos Institucionales</h2>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                {[
-                  { icon: '📋', bg: '#EEF2FF', color: '#3730A3', titulo: 'Rúbrica de Defensa Oral', desc: 'Evaluación de dominio del tema y presentación' },
-                  { icon: '📑', bg: '#FEF3C7', color: '#92400E', titulo: 'Dictamen de Escrito Final', desc: 'Criterios metodológicos y redacción técnica' },
-                  { icon: '💡', bg: '#D1FAE5', color: '#065F46', titulo: 'Criterios de Innovación', desc: 'Evaluación de aporte tecnológico e impacto' }
-                ].map(fmt => (
+                {FORMATOS_INSTITUCIONALES.map(fmt => (
                   <div key={fmt.titulo} style={{ padding: '20px', border: '1px solid #F1F5F9', borderRadius: '16px', background: '#F8FAFC', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                       <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: fmt.bg, color: fmt.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '700', fontSize: '1.2rem' }}>{fmt.icon}</div>
@@ -1052,9 +1296,22 @@ export const TeacherDashboard = ({ user, activeTab = 'inicio', setActiveTab }) =
                         <p style={{ margin: 0, color: '#64748B', fontSize: '0.8rem' }}>{fmt.desc}</p>
                       </div>
                     </div>
-                    <button style={{ background: '#FFFFFF', color: '#0F172A', border: '1px solid #CBD5E1', padding: '8px 16px', borderRadius: '10px', fontSize: '0.8rem', fontWeight: '600', cursor: 'pointer' }}>
-                      Descargar PDF
-                    </button>
+                    <button
+  type="button"
+  onClick={() => descargarFormatoInstitucional(fmt)}
+  style={{
+    background: '#FFFFFF',
+    color: '#0F172A',
+    border: '1px solid #CBD5E1',
+    padding: '8px 16px',
+    borderRadius: '10px',
+    fontSize: '0.8rem',
+    fontWeight: '600',
+    cursor: 'pointer'
+  }}
+>
+  Descargar PDF
+</button>
                   </div>
                 ))}
               </div>
